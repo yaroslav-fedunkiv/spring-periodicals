@@ -1,4 +1,4 @@
-package com.epam.fedunkiv.periodicals.customValidation;
+package com.epam.fedunkiv.periodicals.validation;
 
 import com.epam.fedunkiv.periodicals.services.UserService;
 

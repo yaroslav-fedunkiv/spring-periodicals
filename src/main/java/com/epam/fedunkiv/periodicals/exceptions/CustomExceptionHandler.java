@@ -24,7 +24,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         responseBody.put("timestamp", new Date());
         responseBody.put("status", status.value());
 
-        List<String> errors = ex.getBindingResult().getFieldErrors()
+        List<String> errors = ex.getBindingResult().getAllErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.toList());
@@ -36,9 +36,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(e-> e.getField())
                 .collect(Collectors.toList());
 
+
         responseBody.put("fields", fields);
 
-        log.warn(errors);
+        log.error(errors);
 
         return new ResponseEntity<>(responseBody, headers, status);
     }

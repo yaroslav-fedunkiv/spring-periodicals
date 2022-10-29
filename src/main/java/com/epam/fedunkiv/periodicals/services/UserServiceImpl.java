@@ -42,15 +42,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<FullUserDto> getByEmail(String email) {
         log.info("start method getByEmail() in user service {}", email);
-        User user = null;
         try {
-            user = userRepository.findByEmail(email);
+            User user = userRepository.findByEmail(email);
             return Optional.of(mapper.map(user, FullUserDto.class));
         } catch (Exception e) {
-            log.error("something went wrong using getByEmail() method in UserServiceImpl");
+            log.info("This email was not found {}", email);
             return Optional.empty();
         }
-//        return user == null ? Optional.empty() : Optional.of(mapper.map(user, FullUserDto.class));
     }
 
     @Override

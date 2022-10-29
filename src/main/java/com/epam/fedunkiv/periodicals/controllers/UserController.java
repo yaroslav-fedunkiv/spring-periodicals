@@ -5,12 +5,13 @@ import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Log4j2
 @RestController
@@ -45,14 +46,13 @@ public class UserController {
     }
 
     @GetMapping("/get-by/{email}")
-    public Optional<FullUserDto> getByEmail(@PathVariable("email") String email){
-        FullUserDto fullUserDto = new FullUserDto();
-            if (userService.getByEmail(email).isEmpty()){
-                return Optional.of(fullUserDto);
-            } else {
-                log.info("got user by email {}", email);
-                return userService.getByEmail(email);
-            }
+    public ResponseEntity<Object> getByEmail(@PathVariable("email") String email){
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("message", email + " — such email was not found");
+        responseBody.put("status", HttpStatus.NOT_FOUND.value() + " NOT_FOUND");
+        return userService.getByEmail(email).isEmpty()
+                ? new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND)
+                : new ResponseEntity<>(userService.getByEmail(email), HttpStatus.OK);
     }
 
     @GetMapping("/delete-by/{email}")
