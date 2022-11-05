@@ -5,11 +5,11 @@ import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = ExistedEmailValidator.class)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Constraint(validatedBy = ExistedUserValidator.class)
+@Target({ElementType.PARAMETER, ElementType.TYPE, ElementType.LOCAL_VARIABLE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExistedEmail {
-    String message() default "Such email address is already exist";
+public @interface ExistedUser {
+    String message() default "Such a user isn't exist";
 
     Class<?>[] groups() default {};
 

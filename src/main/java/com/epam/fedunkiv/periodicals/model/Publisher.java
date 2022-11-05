@@ -43,18 +43,5 @@ public class Publisher {
     @Column(columnDefinition = "timestamp default now()")
     private LocalDateTime updated;
 
-    @Override
-    public String toString() {
-        return "Publisher{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", topic=" + topic +
-                ", price=" + price +
-                ", description='" + description + '\'' +
-                ", subscribers=" + subscribers +
-                ", isActive=" + isActive +
-                ", created=" + created +
-                ", updated=" + updated +
-                '}';
-    }
+
 }

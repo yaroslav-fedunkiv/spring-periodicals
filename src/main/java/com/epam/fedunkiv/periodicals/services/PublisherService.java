@@ -6,13 +6,15 @@ import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PublisherService {
     void createPublisher(CreatePublisherDto createPublisherDto);
     List<FullPublisherDto> getAll();
     void subscribe(SubscribeDto subscribeDto);
-    FullPublisherDto getByTitle(String title);
+    Optional<FullPublisherDto> getByTitle(String title);
     FullPublisherDto getById(String id);
-    void deletePublisher(String title);
+    void deactivatePublisher(String title);
     void updatePublisher(UpdatePublisherDto updatePublisher);
+    boolean isActive(String title);
 }

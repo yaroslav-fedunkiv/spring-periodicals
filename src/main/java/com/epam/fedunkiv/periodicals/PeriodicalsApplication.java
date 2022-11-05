@@ -2,8 +2,6 @@ package com.epam.fedunkiv.periodicals;
 
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
-import com.epam.fedunkiv.periodicals.model.Publisher;
-import com.epam.fedunkiv.periodicals.repositories.PublisherRepository;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -11,8 +9,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import java.time.LocalDateTime;
 
 
 @SpringBootApplication
@@ -24,7 +20,7 @@ public class PeriodicalsApplication {
     }
 
     @Bean()
-    CommandLineRunner init(UserService userService, PublisherService publisherService, PublisherRepository publisherRepository) {
+    CommandLineRunner init(UserService userService, PublisherService publisherService) {
         return args -> {
             CreateUserDto createUserDto = new CreateUserDto();
             createUserDto.setRole("ADMIN");
@@ -67,6 +63,7 @@ public class PeriodicalsApplication {
 //                            LocalDateTime.now().withNano(0).toString()
                     );
             publisherService.createPublisher(nationalGeo);
+
 
 //            Publisher publisher = publisherRepository.getById(2L);
 //            log.debug("inside main() ==> " + publisher);

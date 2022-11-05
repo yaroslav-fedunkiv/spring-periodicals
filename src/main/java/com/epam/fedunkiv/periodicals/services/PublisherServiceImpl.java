@@ -4,6 +4,7 @@ import com.epam.fedunkiv.periodicals.dto.publishers.FullPublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
+import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.model.Publisher;
 import com.epam.fedunkiv.periodicals.model.Subscriptions;
 import com.epam.fedunkiv.periodicals.repositories.PublisherRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -37,14 +39,14 @@ public class PublisherServiceImpl implements PublisherService {
     @Transactional
     @Override
     public void updatePublisher(UpdatePublisherDto updatePublisher){
-        FullPublisherDto publisher = getByTitle(updatePublisher.getOldTitle());
+        FullPublisherDto publisher = getByTitle(updatePublisher.getOldTitle()).get();
         CreatePublisherDto editedPublisher = new CreatePublisherDto();
         editedPublisher.setTitle(updatePublisher.getTitle() == null ? updatePublisher.getOldTitle() : updatePublisher.getTitle());
         editedPublisher.setTopic(updatePublisher.getTopic() == null ? publisher.getTopic() : updatePublisher.getTopic());
         editedPublisher.setPrice(updatePublisher.getPrice() == null ? publisher.getPrice() : updatePublisher.getPrice());
         editedPublisher.setDescription(updatePublisher.getDescription() == null ? publisher.getDescription() : updatePublisher.getDescription());
 
-        deletePublisher(updatePublisher.getOldTitle());
+        deactivatePublisher(updatePublisher.getOldTitle());
         createPublisher(editedPublisher);
         log.info("publisher is edited {}", editedPublisher);
     }
@@ -58,9 +60,16 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
-    public FullPublisherDto getByTitle(String title) {
+    public Optional<FullPublisherDto> getByTitle(String title) {
         log.info("start method getByTitle() in publisher service {}", title);
-        return mapper.map(publisherRepository.getByTitle(title), FullPublisherDto.class);
+        try {
+            Publisher publisher = publisherRepository.getByTitle(title);
+            return Optional.of(mapper.map(publisher, FullPublisherDto.class));
+        } catch (IllegalArgumentException e) {
+            log.info("This title was not found {}", title);
+            throw new NoSuchPublisherException();
+//            return Optional.empty();
+        }
     }
 
     @Override
@@ -79,8 +88,18 @@ public class PublisherServiceImpl implements PublisherService {
 
     @Override
     @Transactional
-    public void deletePublisher(String title) {
+    public void deactivatePublisher(String title) {
         log.info("start method deletePublisher() by title in publisher service {}", title);
-        publisherRepository.deleteByTitle(title);
+//        try {
+            publisherRepository.deactivatePublisher(title);
+//        } catch(IllegalArgumentException e){
+//            log.error("Can't find publisher", e);
+//            throw new NoSuchPublisherException();
+//        }
+    }
+    @Override
+    public boolean isActive(String title){
+        log.info("check if user with such email {} is active", title);
+        return Boolean.parseBoolean(getByTitle(title).get().getIsActive());
     }
 }

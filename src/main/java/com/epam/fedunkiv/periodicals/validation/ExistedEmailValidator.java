@@ -1,5 +1,6 @@
 package com.epam.fedunkiv.periodicals.validation;
 
+import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.services.UserService;
 
 import javax.annotation.Resource;
@@ -17,6 +18,11 @@ public class ExistedEmailValidator implements
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext ctx){
-        return userService.getByEmail(s).isEmpty();
+        try{
+            userService.getByEmail(s);
+            return false;
+        } catch (NullPointerException | NoSuchUserException e){
+            return true;
+        }
     }
 }
