@@ -7,6 +7,7 @@ import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
+import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,68 +31,6 @@ import java.util.*;
 public class PublisherController {
     @Resource
     private PublisherService publisherService;
-    @Resource
-    private UserService userService;
-
-
-    @Operation(summary = "Subscribe a user to a publisher")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User was subscribed",
-                    content = @Content),
-            @ApiResponse(responseCode = "412", description = "User hasn't enough money",
-                    content = @Content),
-            @ApiResponse(responseCode = "400", description = "wrong user email or publisher title",
-                    content = @Content)
-    })
-    @PostMapping("/get-by/{title}/{email}")
-    public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
-                                            @PathVariable("title") String title,
-                                            @RequestBody SubscribeDto subscribeDto) {
-        log.info("start subscribing process");
-        ResponseEntity<Object> responseEntity = null;
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        List<String> messages = new LinkedList<>();
-        FullPublisherDto publisher = publisherService.getByTitle(title).orElse(null);
-        FullUserDto user = userService.getByEmail(email).orElse(null);
-
-        if (!publisherService.getByTitle(title).isEmpty()) {
-            publisher = publisherService.getByTitle(title).get();
-        } else {
-            messages.add(title + " — publisher with the such title was not found");
-        }
-
-        if (!userService.getByEmail(email).isEmpty()) {
-            user = userService.getByEmail(email).get();
-        } else {
-            messages.add(email + " — user with the such email was not found");
-        }
-
-        responseBody.put("status", publisher == null || user == null ? HttpStatus.BAD_REQUEST : null);
-        responseBody.put("messages", messages);
-
-
-        try {
-            if (publisher != null && user != null) {
-                subscribeDto.setPublisherId(publisher.getId());
-                subscribeDto.setUserId(user.getId());
-                userService.writeOffFromBalance(publisher.getPrice(), user.getEmail());
-                publisherService.subscribe(subscribeDto);
-                responseBody.put("message", email + " user was subscribed to '" + title + "' title");
-                responseBody.put("status", HttpStatus.OK);
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            } else {
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-            }
-
-        } catch (NotEnoughMoneyException e) {
-            log.error("user hasn't enough money");
-            messages.add(email + " user hasn't enough money");
-            responseBody.put("messages", messages);
-            responseBody.put("status", HttpStatus.PRECONDITION_FAILED);
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.PRECONDITION_FAILED);
-        }
-        return responseEntity;
-    }
 
     @Operation(summary = "Create a publisher")
     @ApiResponses(value = {
@@ -112,10 +51,20 @@ public class PublisherController {
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
-    @PostMapping("/update") //fixme
-    public void updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto) {
-        publisherService.updatePublisher(updatePublisherDto);
-        log.info("publisher updated {}", updatePublisherDto);
+    @Operation(summary = "Updated a publisher by its title")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Publisher was updated"),
+            @ApiResponse(responseCode = "404", description = "Publisher not found")})
+    @PatchMapping("/update")
+    public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto) {
+        try{
+            publisherService.updatePublisher(updatePublisherDto);
+            log.info("updated publisher by title {}", updatePublisherDto.getOldTitle());
+            return new ResponseEntity<>(updatePublisherDto.getOldTitle() + " was updated", HttpStatus.OK);
+        }catch (NoSuchPublisherException e){
+            log.error("{} not found", updatePublisherDto.getOldTitle());
+            return new ResponseEntity<>(updatePublisherDto.getOldTitle() + " not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     @Operation(summary = "Get a publisher by its title")
@@ -132,24 +81,15 @@ public class PublisherController {
         try {
             return new ResponseEntity<>(publisherService.getByTitle(title), HttpStatus.OK);
         } catch (NoSuchPublisherException e) {
-            log.error("Publisher with such title was not found");
-            return new ResponseEntity<>(title + " — the publisher with such a title was not found",
+            log.error("Publisher with such title not found");
+            return new ResponseEntity<>(title + " — the publisher with such a title not found",
                     HttpStatus.NOT_FOUND);
         }
-
-//
-//        Map<String, Object> responseBody = new LinkedHashMap<>();
-//        responseBody.put("message", title + " — publisher with the such title was not found");
-//        responseBody.put("status", HttpStatus.NOT_FOUND.value() + " NOT_FOUND");
-//
-//        return publisherService.getByTitle(title).isEmpty()
-//                ? new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND)
-//                : new ResponseEntity<>(publisherService.getByTitle(title), HttpStatus.OK);
     }
 
     @Operation(summary = "Deactivate a publisher by its title")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Publisher as ddeactivated"),
+            @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
     @DeleteMapping("/deactivate/{title}")
     public ResponseEntity<Object> deactivateByTitle(@PathVariable("title") String title) {
@@ -163,8 +103,8 @@ public class PublisherController {
                 return new ResponseEntity<>(title + " was deactivated", HttpStatus.OK);
             }
         } catch (NoSuchPublisherException e){
-            log.error("{} was not found", title);
-            return new ResponseEntity<>(title + " was not found", HttpStatus.NOT_FOUND);
+            log.error("{} not found", title);
+            return new ResponseEntity<>(title + " not found", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -175,8 +115,48 @@ public class PublisherController {
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
     @GetMapping("/get-all")
-    public List<FullPublisherDto> getAll() {
+    public ResponseEntity<Object> getAll() {
         log.info("getting all publishers");
-        return publisherService.getAll();
+        return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
+    }
+
+    @GetMapping("/get/all/{page}")
+    public ResponseEntity<Object> getAllByPages(@PathVariable String page) {
+        log.info("getting all publishers");
+        return new ResponseEntity<>(publisherService.getAllByPages(page), HttpStatus.OK);
+    }
+
+    @GetMapping("/sort/by/{sort}/{page}")
+    public ResponseEntity<Object> sortBy(@PathVariable String sort, @PathVariable String page) {
+        if (sort.equals("price") || sort.equals("title")){
+            log.info("sorting all publishers");
+            return new ResponseEntity<>(publisherService.sortingBy(sort, page), HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Incorrect sorting type (must be price or title)", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/get/by/{topic}/{page}")
+    public ResponseEntity<Object> getByTopic(@PathVariable String topic, @PathVariable String page) {
+        try {
+            Topics.valueOf(topic);
+            log.info("sorting all publishers");
+            return new ResponseEntity<>(publisherService.getByTopic(topic, page), HttpStatus.OK);
+        } catch (IllegalArgumentException e){
+            log.error("This topic doesn't exist: {}", topic);
+            return new ResponseEntity<>(topic + " — Topic doesn't exist", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Get all publishers which match the search pattern")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all publishers",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullPublisherDto.class))})
+    })
+    @GetMapping("/search/{title}")
+    public ResponseEntity<Object> search(@PathVariable String title) {
+        log.info("getting searched publishers");
+        return new ResponseEntity<>(publisherService.search(title), HttpStatus.OK);
     }
 }

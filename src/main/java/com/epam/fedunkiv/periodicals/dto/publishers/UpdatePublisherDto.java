@@ -11,11 +11,13 @@ import javax.validation.constraints.NotBlank;
 @ToString
 public class UpdatePublisherDto {
     @NotBlank
+    private String oldTitle;
+
     private String title;
 
     private String topic;
 
     private String price;
     private String description;
-    private String oldTitle;
+
 }

@@ -7,10 +7,14 @@ import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.model.Publisher;
 import com.epam.fedunkiv.periodicals.model.Subscriptions;
+import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.repositories.PublisherRepository;
 import com.epam.fedunkiv.periodicals.repositories.SubscriptionRepository;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,14 +45,15 @@ public class PublisherServiceImpl implements PublisherService {
     public void updatePublisher(UpdatePublisherDto updatePublisher){
         FullPublisherDto publisher = getByTitle(updatePublisher.getOldTitle()).get();
         CreatePublisherDto editedPublisher = new CreatePublisherDto();
-        editedPublisher.setTitle(updatePublisher.getTitle() == null ? updatePublisher.getOldTitle() : updatePublisher.getTitle());
-        editedPublisher.setTopic(updatePublisher.getTopic() == null ? publisher.getTopic() : updatePublisher.getTopic());
-        editedPublisher.setPrice(updatePublisher.getPrice() == null ? publisher.getPrice() : updatePublisher.getPrice());
-        editedPublisher.setDescription(updatePublisher.getDescription() == null ? publisher.getDescription() : updatePublisher.getDescription());
 
-        deactivatePublisher(updatePublisher.getOldTitle());
-        createPublisher(editedPublisher);
-        log.info("publisher is edited {}", editedPublisher);
+        String oldTitle = updatePublisher.getOldTitle();
+        String newTitle = (updatePublisher.getTitle() == null ? updatePublisher.getOldTitle() : updatePublisher.getTitle());
+        String topic = (updatePublisher.getTopic() == null ? publisher.getTopic() : updatePublisher.getTopic());
+        String price = (updatePublisher.getPrice() == null ? publisher.getPrice() : updatePublisher.getPrice());
+        String description = (updatePublisher.getDescription() == null ? publisher.getDescription() : updatePublisher.getDescription());
+
+        log.warn("update "+oldTitle+" with fields:\n"+newTitle+"\n"+price+"\n"+topic+"\n"+description);
+        publisherRepository.updatePublisher(newTitle, topic, Double.parseDouble(price), description, oldTitle);
     }
 
     @Override
@@ -60,6 +65,45 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
+    public List<FullPublisherDto> getAllByPages(String page) {
+        Pageable pagesWithThreeElements = PageRequest.of(Integer.parseInt(page), 3);
+        log.info("start method getAll() in publisher service");
+           return publisherRepository.findAll(pagesWithThreeElements)
+                   .stream()
+                   .map(e -> mapper.map(e, FullPublisherDto.class))
+                   .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FullPublisherDto> sortingBy(String sortingOption, String page) {
+        Pageable pagesWithThreeElements = PageRequest.of(Integer.parseInt(page), 3, Sort.by(sortingOption));
+        log.info("start method getAll() in publisher service");
+           return publisherRepository.findAll(pagesWithThreeElements)
+                   .stream()
+                   .map(e -> mapper.map(e, FullPublisherDto.class))
+                   .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FullPublisherDto> getByTopic(String topic, String page) {
+        Pageable pagesWithThreeElements = PageRequest.of(Integer.parseInt(page), 3);
+        log.info("start method getAll() in publisher service");
+           return publisherRepository.findByTopic(pagesWithThreeElements, Topics.valueOf(topic))
+                   .stream()
+                   .map(e -> mapper.map(e, FullPublisherDto.class))
+                   .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FullPublisherDto> search(String title) {
+        log.info("start method search() in publisher service");
+        return publisherRepository.searchByTitle(title).stream()
+                .map(e -> mapper.map(e, FullPublisherDto.class))
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
     public Optional<FullPublisherDto> getByTitle(String title) {
         log.info("start method getByTitle() in publisher service {}", title);
         try {
@@ -68,7 +112,6 @@ public class PublisherServiceImpl implements PublisherService {
         } catch (IllegalArgumentException e) {
             log.info("This title was not found {}", title);
             throw new NoSuchPublisherException();
-//            return Optional.empty();
         }
     }
 
@@ -90,12 +133,7 @@ public class PublisherServiceImpl implements PublisherService {
     @Transactional
     public void deactivatePublisher(String title) {
         log.info("start method deletePublisher() by title in publisher service {}", title);
-//        try {
             publisherRepository.deactivatePublisher(title);
-//        } catch(IllegalArgumentException e){
-//            log.error("Can't find publisher", e);
-//            throw new NoSuchPublisherException();
-//        }
     }
     @Override
     public boolean isActive(String title){

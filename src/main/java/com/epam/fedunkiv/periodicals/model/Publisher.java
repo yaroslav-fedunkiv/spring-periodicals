@@ -18,7 +18,7 @@ public class Publisher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "publisher_id")
     private Long id;
-    @Column(nullable = false) //FIXME: must be uniq but throws "Duplicate entry" when updating publisher
+    @Column(nullable = false)
     private String title;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
