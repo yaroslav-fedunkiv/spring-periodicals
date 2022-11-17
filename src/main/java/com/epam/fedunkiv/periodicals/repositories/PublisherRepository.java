@@ -12,7 +12,6 @@ import java.util.List;
 
 public interface PublisherRepository extends JpaRepository<Publisher, Long> {
     Publisher getByTitle(String title);
-    void deleteByTitle(String title);
 
     @Modifying
     @Query(value = "update publisher set is_active = false where title = ?1", nativeQuery = true)

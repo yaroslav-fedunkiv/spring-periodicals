@@ -7,6 +7,7 @@ import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
+import com.epam.fedunkiv.periodicals.exceptions.UserIsAlreadySubscribedException;
 import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import com.epam.fedunkiv.periodicals.services.UserService;
@@ -31,6 +32,40 @@ import java.util.*;
 public class PublisherController {
     @Resource
     private PublisherService publisherService;
+    @Resource
+    private UserService userService;
+
+
+    @Operation(summary = "Subscribe a user to a publisher")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User was subscribed",
+                    content = @Content),
+            @ApiResponse(responseCode = "412", description = "User hasn't enough money",
+                    content = @Content),
+            @ApiResponse(responseCode = "400", description = "wrong user email or publisher title",
+                    content = @Content)
+    })
+    @PostMapping("/get-by/{title}/{email}")
+    public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
+                                            @PathVariable("title") String title,
+                                            @RequestBody SubscribeDto subscribeDto) {
+        log.info("start subscribing process");
+
+        try {
+            publisherService.subscribe(email, title, subscribeDto);
+            log.info("user {} was subscribed", email);
+            return new ResponseEntity<>(email + " user was subscribed to '" + title + "' title", HttpStatus.OK);
+        }catch (NoSuchElementException e){
+            log.error("wrong email or title");
+            return new ResponseEntity<>("wrong email or title", HttpStatus.BAD_REQUEST);
+        }catch(UserIsAlreadySubscribedException e){
+            log.error("user is already subscribed");
+            return new ResponseEntity<>(email+" this user is already subscribed", HttpStatus.CONFLICT);
+        }catch (NotEnoughMoneyException e){
+            log.error("user haven't enough money");
+            return new ResponseEntity<>("user haven't enough money", HttpStatus.PRECONDITION_FAILED);
+        }
+    }
 
     @Operation(summary = "Create a publisher")
     @ApiResponses(value = {

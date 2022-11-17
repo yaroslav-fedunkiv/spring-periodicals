@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByEmail(String email);
-    void deleteByEmail(String email);
 
     @Modifying
     @Query(value = "update user set is_active = false where email = ?1", nativeQuery = true)

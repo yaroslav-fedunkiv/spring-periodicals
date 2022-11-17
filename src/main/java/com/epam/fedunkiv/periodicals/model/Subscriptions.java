@@ -1,9 +1,6 @@
 package com.epam.fedunkiv.periodicals.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
@@ -12,6 +9,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Setter
 @Getter
+@ToString
 @Entity
 @DynamicInsert
 public class Subscriptions {

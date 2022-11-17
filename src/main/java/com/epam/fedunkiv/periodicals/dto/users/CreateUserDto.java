@@ -16,17 +16,14 @@ import javax.validation.constraints.Pattern;
 @ToString
 @PasswordMatch(message = "{user.confirmPassword}")
 public class CreateUserDto {
-//    @ApiModelProperty(notes = "User role. By default: 'CLIENT'", example = "CLIENT", required = true)
     @Pattern(regexp = "(^CLIENT$)?(^ADMIN$)?", message = "role must be 'CLIENT'")
     private String role;
 
-//    @ApiModelProperty(notes = "User email", example = "joe@gmail.com", required = true)
     @ExistedEmail(message = "{user.existed.email}")//√
     @NotBlank(message = "{user.empty.email}")//√
     @Email(message = "{user.wrong.email}")//√
     private String email;
 
-//    @ApiModelProperty(notes = "User full name", example = "Joe Biden", required = true)
     @NotBlank(message = "{user.empty.fullName}")//√
     private String fullName;
 
@@ -35,6 +32,5 @@ public class CreateUserDto {
     message = "{user.wrong.password}")//√
     private String password;
 
-//    @ApiModelProperty(notes = "Password confirmation", example = "123456Q@q", required = true)
     private String confirmPassword;
 }
