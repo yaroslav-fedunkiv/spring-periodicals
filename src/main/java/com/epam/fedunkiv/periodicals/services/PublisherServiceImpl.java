@@ -32,10 +32,9 @@ public class PublisherServiceImpl implements PublisherService {
     @Resource
     private PublisherRepository publisherRepository;
     @Resource
-    private SubscriptionRepository subscriptionRepository;
-    @Resource
     private UserService userService;
-
+    @Resource
+    private SubscriptionRepository subscriptionRepository;
     @Resource
     private ModelMapper mapper;
 
@@ -145,21 +144,21 @@ public class PublisherServiceImpl implements PublisherService {
     public void subscribe(String email, String title, SubscribeDto subscribeDto){
         FullUserDto user = userService.getByEmail(email).orElseThrow();
         FullPublisherDto publisher = getByTitle(title).orElseThrow();
-        if (isSubscribed(email, title)){
+        subscribeDto.setUserId(user.getId());
+        subscribeDto.setPublisherId(publisher.getId());
+        if (!isSubscribed(email, title)){
+            userService.writeOffFromBalance(publisher.getPrice(), user.getEmail());
+            subscriptionRepository.save(mapper.map(subscribeDto, Subscriptions.class));
+            log.info("user was subscribe inside subscribe() method in publisherServiceImpl {} ", subscribeDto);
+        } else{
+            log.error("user is already subscribed");
             throw new UserIsAlreadySubscribedException();
         }
-        userService.writeOffFromBalance(publisher.getPrice(), user.getEmail());
-        subscriptionRepository.save(mapper.map(subscribeDto, Subscriptions.class));
-        log.info("user was subscribe inside subscribe() method in publisherServiceImpl {} ", subscribeDto);
     }
     private boolean isSubscribed(String email, String title){
         FullUserDto user = userService.getByEmail(email).orElseThrow();
         FullPublisherDto publisher = getByTitle(title).orElseThrow();
         List<Subscriptions> subscriptions = subscriptionRepository.findByPublisherIdAndUserId(Long.parseLong(publisher.getId()), Long.parseLong(user.getId()));
-        if (subscriptions.isEmpty()){
-            return false;
-        } else {
-            return true;
-        }
+        return !subscriptions.isEmpty();
     }
 }

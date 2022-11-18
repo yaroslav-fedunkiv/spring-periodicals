@@ -50,7 +50,6 @@ public class PublisherController {
                                             @PathVariable("title") String title,
                                             @RequestBody SubscribeDto subscribeDto) {
         log.info("start subscribing process");
-
         try {
             publisherService.subscribe(email, title, subscribeDto);
             log.info("user {} was subscribed", email);

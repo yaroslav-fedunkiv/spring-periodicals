@@ -2,6 +2,8 @@ package com.epam.fedunkiv.periodicals;
 
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
+import com.epam.fedunkiv.periodicals.model.Subscriptions;
+import com.epam.fedunkiv.periodicals.repositories.SubscriptionRepository;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -9,6 +11,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+
+import java.util.List;
 
 
 @SpringBootApplication
@@ -20,7 +24,7 @@ public class PeriodicalsApplication {
     }
 
     @Bean()
-    CommandLineRunner init(UserService userService, PublisherService publisherService) {
+    CommandLineRunner init(UserService userService, PublisherService publisherService, SubscriptionRepository subscriptionRepository) {
         return args -> {
             CreateUserDto createUserDto = new CreateUserDto();
             createUserDto.setRole("ADMIN");
@@ -88,6 +92,16 @@ public class PeriodicalsApplication {
                     new CreatePublisherDto("Nature", "NATURE", "88.88",
                             "Nature is a British weekly scientific journal founded and based in London, England. As a multidisciplinary publication, Nature features peer-reviewed research from a variety of academic disciplines, mainly in science and technology. It has core editorial offices across the United States, continental Europe, and Asia under the international scientific publishing company Springer Nature.");
             publisherService.createPublisher(nature);
+
+            Subscriptions subscription = new Subscriptions();
+            subscription.setSubscriptionPeriod(12);
+            subscription.setAddress("Lviv");
+            subscription.setUserId(1l);
+            subscription.setPublisherId(1l);
+
+            subscriptionRepository.save(subscription);
+            List<Subscriptions> subscriptions = subscriptionRepository.findByPublisherIdAndUserId(1l, 1l);
+            log.warn("subscriptions ==> "+subscriptions);
         };
     }
 }
