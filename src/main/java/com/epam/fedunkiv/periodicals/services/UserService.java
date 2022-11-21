@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    void addUser(CreateUserDto createUserDto);
+    Optional<FullUserDto> addUser(CreateUserDto createUserDto);
     List<FullUserDto> getAll();
     Optional<FullUserDto> getByEmail(String email);
     void deactivateUser(String email);
-    void updateUser(UpdateUserDto updatedUser);
+    void updateUser(UpdateUserDto updatedUser, String email);
     Double replenishBalance(String newBalance, String email);
     Double writeOffFromBalance(String price, String email) throws NotEnoughMoneyException;
     boolean isActive(String email);
+
+//    void testUpdateUserMethod(UpdateUserDto updatedUser, String email);
 }

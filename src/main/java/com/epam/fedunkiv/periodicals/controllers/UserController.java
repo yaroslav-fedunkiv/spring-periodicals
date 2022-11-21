@@ -63,18 +63,33 @@ public class UserController {
         }
     }
 
+//    @Operation(summary = "Update a user by its email")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "User was updated"),
+//            @ApiResponse(responseCode = "404", description = "User not found")})
+//    @PatchMapping("/update")
+//    public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user) {
+//        try{
+//            userService.updateUser(user);
+//            log.info("user was updated {}", user.getOldEmail());
+//            return new ResponseEntity<>("User " + user.getOldEmail() + " was apdated", HttpStatus.OK);
+//        }catch (NoSuchUserException e){
+//            return new ResponseEntity<>("User with such email doesn't exist " + user.getOldEmail(), HttpStatus.NOT_FOUND);
+//        }
+//    }
+
     @Operation(summary = "Update a user by its email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
             @ApiResponse(responseCode = "404", description = "User not found")})
-    @PatchMapping("/update")
-    public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user) {
+    @PatchMapping("/update/{email}")
+    public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user, @PathVariable("email") String email) {
         try{
-            userService.updateUser(user);
-            log.info("user was updated {}", user.getOldEmail());
-            return new ResponseEntity<>("User " + user.getOldEmail() + " was apdated", HttpStatus.OK);
+            userService.updateUser(user, email);
+            log.info("user was updated {}", email);
+            return new ResponseEntity<>("User " + email + " was updated", HttpStatus.OK);
         }catch (NoSuchUserException e){
-            return new ResponseEntity<>("User with such email doesn't exist " + user.getOldEmail(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("User with such email doesn't exist " + email, HttpStatus.NOT_FOUND);
         }
     }
 

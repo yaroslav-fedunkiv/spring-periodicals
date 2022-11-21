@@ -12,10 +12,7 @@ import javax.validation.constraints.Pattern;
 @ToString
 public class UpdateUserDto {
     @Email(message = "{user.wrong.email}")
-    private String oldEmail;
-
-    @Email(message = "{user.wrong.email}")
-    private String email;
+    private String newEmail;
 
     private String fullName;
 

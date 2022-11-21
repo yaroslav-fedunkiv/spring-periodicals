@@ -7,11 +7,11 @@ import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
 import com.epam.fedunkiv.periodicals.model.User;
 import com.epam.fedunkiv.periodicals.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,18 +21,18 @@ import java.util.stream.Collectors;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    @Resource
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Resource
-    private ModelMapper mapper;
+    private final ModelMapper mapper;
 
     @Override
-    public void addUser(CreateUserDto createUserDto) {
+    public Optional<FullUserDto> addUser(CreateUserDto createUserDto) {
         log.info("start method addUser() in userService: " + createUserDto.getEmail());
         userRepository.save(mapper.map(createUserDto, User.class));
         log.info("added new user");
+        return getByEmail(createUserDto.getEmail());
     }
 
     @Override
@@ -55,35 +55,64 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+//    @Override
+//    @Transactional
+//    public void updateUser(UpdateUserDto updatedUser) {
+//        FullUserDto fullUserDto;
+//        try {
+//        fullUserDto = getByEmail(updatedUser.getOldEmail()).orElseThrow();
+//        } catch (IllegalArgumentException e) {
+//            log.info("This user {} was not found ", updatedUser.getOldEmail());
+//            throw new NoSuchUserException();
+//        }
+//        String oldEmail = fullUserDto.getEmail();
+//        String newEmail = updatedUser.getEmail() == null
+//                ? updatedUser.getOldEmail() : updatedUser.getEmail();
+//        String fullName = updatedUser.getFullName() == null
+//                ? fullUserDto.getFullName() : updatedUser.getFullName();
+//        String address = updatedUser.getAddress() == null
+//                ? fullUserDto.getAddress() : updatedUser.getAddress();
+//        log.warn("User "+oldEmail+" was updated with fields:\n"
+//                + fullName +"\n"+ newEmail +"\n"+ address);
+//
+//        userRepository.updateUser(oldEmail, fullName, newEmail, address);
+//    }
+
     @Override
     @Transactional
-    public void updateUser(UpdateUserDto updatedUser) {
-        FullUserDto fullUserDto = null;
+    public void updateUser(UpdateUserDto updatedUser, String email){
+        FullUserDto fullUserDto;
         try {
-        fullUserDto = getByEmail(updatedUser.getOldEmail()).get();
+            fullUserDto = getByEmail(email).orElseThrow();
         } catch (IllegalArgumentException e) {
-            log.info("This user {} was not found ", updatedUser.getOldEmail());
+            log.info("This user {} was not found ", email);
             throw new NoSuchUserException();
         }
-        CreateUserDto editUser = new CreateUserDto();
-        String oldEmail = fullUserDto.getEmail();
-        String newEmail = updatedUser.getEmail() == null
-                ? updatedUser.getOldEmail() : updatedUser.getEmail();
+        Optional<User> user = userRepository.findById(Long.parseLong(fullUserDto.getId()));
+
+        String newEmail = updatedUser.getNewEmail() == null
+                ? email : updatedUser.getNewEmail();
         String fullName = updatedUser.getFullName() == null
                 ? fullUserDto.getFullName() : updatedUser.getFullName();
         String address = updatedUser.getAddress() == null
                 ? fullUserDto.getAddress() : updatedUser.getAddress();
-        log.warn("User "+oldEmail+" was updated with fields:\n"
-                + fullName +"\n"+ newEmail +"\n"+ address);
+        String balance = updatedUser.getBalance() == null
+                ? fullUserDto.getBalance() : updatedUser.getBalance();
 
-        userRepository.updateUser(oldEmail, fullName, newEmail, address);
+        user.orElseThrow().setEmail(newEmail);
+        user.orElseThrow().setFullName(fullName);
+        user.orElseThrow().setAddress(address);
+        user.orElseThrow().setBalance(Long.parseLong(balance));
+        userRepository.save(user.orElseThrow());
+        log.warn("User "+email+" was updated with fields:\n"
+                + fullName +"\n"+ newEmail +"\n"+ address+"\n"+ balance);
     }
 
     @Override
     @Transactional
     public Double replenishBalance(String newBalance, String email) {
         log.info("start replenish the balance {}", email);
-        FullUserDto user = getByEmail(email).get();
+        FullUserDto user = getByEmail(email).orElseThrow();
         Double balance = Double.parseDouble(newBalance) + Double.parseDouble(user.getBalance());
         userRepository.updateBalance(balance, email);
         return balance;
@@ -93,8 +122,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Double writeOffFromBalance(String price, String email) throws NotEnoughMoneyException{
         log.info("start replenish the balance {}", email);
-        FullUserDto user = getByEmail(email).get();
-        if (Double.parseDouble(price) > Double.parseDouble(getByEmail(email).get().getBalance())){
+        FullUserDto user = getByEmail(email).orElseThrow();
+        if (Double.parseDouble(price) > Double.parseDouble(getByEmail(email).orElseThrow().getBalance())){
             throw new NotEnoughMoneyException("Not enough money");
         }
         Double balance = Double.parseDouble(user.getBalance()) - Double.parseDouble(price);
@@ -112,7 +141,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isActive(String email){
         log.info("check if user with such email {} is active", email);
-        return Boolean.parseBoolean(getByEmail(email).get().getIsActive());
+        return Boolean.parseBoolean(getByEmail(email).orElseThrow().getIsActive());
     }
 
     private Double round(Double value) {
