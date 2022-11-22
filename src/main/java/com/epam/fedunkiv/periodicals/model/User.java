@@ -39,7 +39,7 @@ public class User {
     )
     private List<Publisher> subscription;
     @Column(columnDefinition = "double default 0.00")
-    private double balance;
+    private Double balance;
     @Column(nullable = false)
     private String password;
     @Column(columnDefinition = "boolean default true")

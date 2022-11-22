@@ -12,10 +12,10 @@ public interface UserService {
     Optional<FullUserDto> addUser(CreateUserDto createUserDto);
     List<FullUserDto> getAll();
     Optional<FullUserDto> getByEmail(String email);
-    void deactivateUser(String email);
-    void updateUser(UpdateUserDto updatedUser, String email);
-    Double replenishBalance(String newBalance, String email);
-    Double writeOffFromBalance(String price, String email) throws NotEnoughMoneyException;
+    FullUserDto deactivateUser(String email);
+    UpdateUserDto updateUser(UpdateUserDto updatedUser, String email);
+    FullUserDto replenishBalance(String newBalance, String email);
+    FullUserDto writeOffFromBalance(String price, String email) throws NotEnoughMoneyException;
     boolean isActive(String email);
 
 //    void testUpdateUserMethod(UpdateUserDto updatedUser, String email);

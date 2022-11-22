@@ -4,6 +4,7 @@ import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
+import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
 import com.epam.fedunkiv.periodicals.model.Role;
 import com.epam.fedunkiv.periodicals.model.User;
 import com.epam.fedunkiv.periodicals.repositories.UserRepository;
@@ -17,15 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
-import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -41,12 +38,12 @@ class UserServiceImplTest {
     @BeforeEach
     void setMockOutput() {
         user = new User();
-        user.setId(1l);
+        user.setId(1L);
         user.setFullName("John Snow");
         user.setRole(Role.CLIENT);
         user.setEmail("john@gmail.com");
         user.setAddress("address");
-        user.setBalance(00.00);
+        user.setBalance(00.00D);
         user.setPassword("123456Q@q");
         user.setIsActive(true);
         user.setCreated(LocalDateTime.now());
@@ -95,14 +92,73 @@ class UserServiceImplTest {
 
     @DisplayName("JUnit test for updateUser() method")
     @Test
-    void UpdateUser_positiveTest(){ //FIXME: how to test update methods?
-        UpdateUserDto updatedUser = new UpdateUserDto();
-        updatedUser.setOldEmail(user.getEmail());
-        updatedUser.setFullName("Bob Smith");
-        updatedUser.setAddress("Lviv, Sadova st. 35");
+    void UpdateUser_positiveTest(){
+        lenient().when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        lenient().when(userRepository.save(user)).thenReturn(user);
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
 
-        lenient().when(userRepository.findByEmail("john@gmail.com")).thenReturn(user);
-//        lenient().when(userRepository.updateUser(user.getEmail(), updatedUser.getFullName(), user.getEmail(), updatedUser.getAddress()));
+        UpdateUserDto editUserDto = new UpdateUserDto();
+        editUserDto.setFullName("Bob Smith");
+        editUserDto.setAddress("Lviv, Sadova st. 35");
+
+        UpdateUserDto updatedUserDto = userService.updateUser(editUserDto, user.getEmail());
+
+        assertThat(updatedUserDto.getFullName()).isEqualTo("Bob Smith");
+        assertThat(updatedUserDto.getAddress()).isEqualTo("Lviv, Sadova st. 35");
     }
 
+    @DisplayName("JUnit test for replenishBalance() method")
+    @Test
+    void ReplenishUserBalance_positiveTest(){
+        lenient().when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        lenient().when(userRepository.save(user)).thenReturn(user);
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+
+        FullUserDto userDto = userService.replenishBalance("235.56", user.getEmail());
+
+        assertThat(userDto.getBalance()).isEqualTo("235.56");
+    }
+
+    @DisplayName("JUnit test for writeOffFromBalance() method")
+    @Test
+    void WriteOffFromUserBalance_positiveTest(){
+        user.setBalance(200.25);
+        lenient().when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        lenient().when(userRepository.save(user)).thenReturn(user);
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+
+        FullUserDto userDto = userService.writeOffFromBalance("100.10", user.getEmail());
+
+        assertThat(userDto.getBalance()).isEqualTo("100.15");
+    }
+
+    @DisplayName("JUnit test for writeOffFromBalance() method (negative scenario)")
+    @Test
+    void WriteOffFromUserBalance_negativeTest(){
+        lenient().when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        lenient().when(userRepository.save(user)).thenReturn(user);
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+
+        Assertions.assertThrows(NotEnoughMoneyException.class, () -> {
+            userService.writeOffFromBalance("100.10", user.getEmail());
+        });
+    }
+
+    @DisplayName("JUnit test for deactivateUser() method (positive scenario)")
+    @Test
+    void DeactivateUser_positiveTest(){
+        lenient().when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        lenient().when(userRepository.save(user)).thenReturn(user);
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+
+        FullUserDto userDto = userService.deactivateUser(user.getEmail());
+        assertThat(userDto.getIsActive()).isEqualTo("false");
+    }
+
+    @DisplayName("JUnit test for isActive() method")
+    @Test
+    void IsActiveUser_positiveTest(){
+        lenient().when(userRepository.findByEmail(user.getEmail())).thenReturn(user);
+        assertThat(userService.isActive(user.getEmail())).isTrue();
+    }
 }

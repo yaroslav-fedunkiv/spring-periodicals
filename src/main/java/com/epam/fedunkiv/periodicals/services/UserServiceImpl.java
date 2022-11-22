@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUser(UpdateUserDto updatedUser, String email){
+    public UpdateUserDto updateUser(UpdateUserDto updateUserDto, String email){
         FullUserDto fullUserDto;
         try {
             fullUserDto = getByEmail(email).orElseThrow();
@@ -89,53 +89,68 @@ public class UserServiceImpl implements UserService {
             throw new NoSuchUserException();
         }
         Optional<User> user = userRepository.findById(Long.parseLong(fullUserDto.getId()));
+        log .error("user ==> "+ user);
 
-        String newEmail = updatedUser.getNewEmail() == null
-                ? email : updatedUser.getNewEmail();
-        String fullName = updatedUser.getFullName() == null
-                ? fullUserDto.getFullName() : updatedUser.getFullName();
-        String address = updatedUser.getAddress() == null
-                ? fullUserDto.getAddress() : updatedUser.getAddress();
-        String balance = updatedUser.getBalance() == null
-                ? fullUserDto.getBalance() : updatedUser.getBalance();
+        String newEmail = updateUserDto.getNewEmail() == null
+                ? email : updateUserDto.getNewEmail();
+        String fullName = updateUserDto.getFullName() == null
+                ? fullUserDto.getFullName() : updateUserDto.getFullName();
+        String address = updateUserDto.getAddress() == null
+                ? fullUserDto.getAddress() : updateUserDto.getAddress();
+        String balance = updateUserDto.getBalance() == null
+                ? fullUserDto.getBalance() : updateUserDto.getBalance();
 
         user.orElseThrow().setEmail(newEmail);
         user.orElseThrow().setFullName(fullName);
         user.orElseThrow().setAddress(address);
-        user.orElseThrow().setBalance(Long.parseLong(balance));
-        userRepository.save(user.orElseThrow());
+        user.orElseThrow().setBalance(Double.parseDouble(balance));
+        User updatedUser = userRepository.save(user.orElseThrow());
         log.warn("User "+email+" was updated with fields:\n"
                 + fullName +"\n"+ newEmail +"\n"+ address+"\n"+ balance);
+        return mapper.map(updatedUser, UpdateUserDto.class);
     }
 
     @Override
     @Transactional
-    public Double replenishBalance(String newBalance, String email) {
+    public FullUserDto replenishBalance(String newBalance, String email) {
         log.info("start replenish the balance {}", email);
-        FullUserDto user = getByEmail(email).orElseThrow();
-        Double balance = Double.parseDouble(newBalance) + Double.parseDouble(user.getBalance());
-        userRepository.updateBalance(balance, email);
-        return balance;
+        FullUserDto userDto = getByEmail(email).orElseThrow();
+
+        Double balance = Double.parseDouble(newBalance) + Double.parseDouble(userDto.getBalance());
+        Optional<User> user = userRepository.findById(Long.parseLong(userDto.getId()));
+        user.orElseThrow().setBalance(balance);
+        User editedBalance = userRepository.save(user.orElseThrow());
+        return mapper.map(editedBalance, FullUserDto.class);
     }
 
     @Override
     @Transactional
-    public Double writeOffFromBalance(String price, String email) throws NotEnoughMoneyException{
-        log.info("start replenish the balance {}", email);
-        FullUserDto user = getByEmail(email).orElseThrow();
+    public FullUserDto writeOffFromBalance(String price, String email) throws NotEnoughMoneyException{
+        log.info("start write money off from the user balance {}", email);
+        FullUserDto userDto = getByEmail(email).orElseThrow();
+        Optional<User> user = userRepository.findById(Long.parseLong(userDto.getId()));
         if (Double.parseDouble(price) > Double.parseDouble(getByEmail(email).orElseThrow().getBalance())){
+            log.error("user haven't enough money");
             throw new NotEnoughMoneyException("Not enough money");
         }
-        Double balance = Double.parseDouble(user.getBalance()) - Double.parseDouble(price);
-        userRepository.updateBalance(round(balance), email);
-        return balance;
+        Double balance = Double.parseDouble(userDto.getBalance()) - Double.parseDouble(price);
+
+        user.orElseThrow().setBalance(round(balance));
+        User editedBalance = userRepository.save(user.orElseThrow());
+
+        return mapper.map(editedBalance, FullUserDto.class);
     }
 
     @Override
     @Transactional
-    public void deactivateUser(String email) { //fixme make try/catch block
-        userRepository.deactivateUser(email);
+    public FullUserDto deactivateUser(String email) {
+        log.info("start deactivating user: {}", email);
+        FullUserDto userDto = getByEmail(email).orElseThrow();
+        Optional<User> user = userRepository.findById(Long.parseLong(userDto.getId()));
+        user.orElseThrow().setIsActive(false);
+        User deactivatedUser = userRepository.save(user.orElseThrow());
         log.info("user {} is deactivated", email);
+        return mapper.map(deactivatedUser, FullUserDto.class);
     }
 
     @Override
