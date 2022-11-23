@@ -36,7 +36,7 @@ class UserServiceImplTest {
     private User user;
 
     @BeforeEach
-    void setMockOutput() {
+    void init() {
         user = new User();
         user.setId(1L);
         user.setFullName("John Snow");

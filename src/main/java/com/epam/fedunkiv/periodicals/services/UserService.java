@@ -17,6 +17,4 @@ public interface UserService {
     FullUserDto replenishBalance(String newBalance, String email);
     FullUserDto writeOffFromBalance(String price, String email) throws NotEnoughMoneyException;
     boolean isActive(String email);
-
-//    void testUpdateUserMethod(UpdateUserDto updatedUser, String email);
 }

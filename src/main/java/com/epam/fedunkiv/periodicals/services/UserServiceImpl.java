@@ -55,39 +55,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-//    @Override
-//    @Transactional
-//    public void updateUser(UpdateUserDto updatedUser) {
-//        FullUserDto fullUserDto;
-//        try {
-//        fullUserDto = getByEmail(updatedUser.getOldEmail()).orElseThrow();
-//        } catch (IllegalArgumentException e) {
-//            log.info("This user {} was not found ", updatedUser.getOldEmail());
-//            throw new NoSuchUserException();
-//        }
-//        String oldEmail = fullUserDto.getEmail();
-//        String newEmail = updatedUser.getEmail() == null
-//                ? updatedUser.getOldEmail() : updatedUser.getEmail();
-//        String fullName = updatedUser.getFullName() == null
-//                ? fullUserDto.getFullName() : updatedUser.getFullName();
-//        String address = updatedUser.getAddress() == null
-//                ? fullUserDto.getAddress() : updatedUser.getAddress();
-//        log.warn("User "+oldEmail+" was updated with fields:\n"
-//                + fullName +"\n"+ newEmail +"\n"+ address);
-//
-//        userRepository.updateUser(oldEmail, fullName, newEmail, address);
-//    }
-
     @Override
     @Transactional
     public UpdateUserDto updateUser(UpdateUserDto updateUserDto, String email){
-        FullUserDto fullUserDto;
-        try {
-            fullUserDto = getByEmail(email).orElseThrow();
-        } catch (IllegalArgumentException e) {
-            log.info("This user {} was not found ", email);
-            throw new NoSuchUserException();
-        }
+        FullUserDto fullUserDto = getByEmail(email).orElseThrow();
         Optional<User> user = userRepository.findById(Long.parseLong(fullUserDto.getId()));
         log .error("user ==> "+ user);
 
