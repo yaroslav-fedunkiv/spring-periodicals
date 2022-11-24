@@ -37,17 +37,8 @@ class UserServiceImplTest {
 
     @BeforeEach
     void init() {
-        user = new User();
-        user.setId(1L);
-        user.setFullName("John Snow");
-        user.setRole(Role.CLIENT);
-        user.setEmail("john@gmail.com");
-        user.setAddress("address");
-        user.setBalance(00.00D);
-        user.setPassword("123456Q@q");
-        user.setIsActive(true);
-        user.setCreated(LocalDateTime.now());
-        user.setUpdated(LocalDateTime.now());
+        user = new User(1L, "John Snow", Role.CLIENT, "john@gmail.com", "address", null, 00.00,
+                "123456Q@q", true, LocalDateTime.now(), LocalDateTime.now());
         userService = new UserServiceImpl(userRepository, mapper);
     }
 

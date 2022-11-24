@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,27 @@ import java.util.*;
 @RestController
 @RequestMapping("/users")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
-    @Resource
-    private UserService userService;
+//    @Resource
+    private final UserService userService;
+
+    @GetMapping("/ok")
+    public ResponseEntity<Object> testControllerMethod() {
+        return new ResponseEntity<>("ok", HttpStatus.OK);
+    }
+    @Operation(summary = "Get all users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all users",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullUserDto.class))})
+    })
+    @GetMapping("/get-all")
+    public List<FullUserDto> getAllUsers() {
+        List<FullUserDto> list = userService.getAll();
+        log.info("got all users");
+        return list;
+    }
 
     @Operation(summary = "Create a user")
     @ApiResponses(value = {
@@ -76,19 +95,6 @@ public class UserController {
         }catch (NoSuchUserException e){
             return new ResponseEntity<>("User with such email doesn't exist " + email, HttpStatus.NOT_FOUND);
         }
-    }
-
-    @Operation(summary = "Get all users")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found all users",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = FullUserDto.class))})
-    })
-    @GetMapping("/get-all")
-    public List<FullUserDto> getAllUsers() {
-        List<FullUserDto> list = userService.getAll();
-        log.info("got all users");
-        return list;
     }
 
     @Operation(summary = "Get a user by its email")
