@@ -39,7 +39,7 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullUserDto.class))})
     })
-    @GetMapping("/get-all")
+    @GetMapping("/get-all")//√
     public List<FullUserDto> getAllUsers() {
         List<FullUserDto> list = userService.getAll();
         log.info("got all users");
@@ -53,7 +53,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad request. User wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")
+    @PostMapping("/create")//√
     public ResponseEntity<Object> createUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "user object to be created")
                                              @Valid @RequestBody CreateUserDto createUserDto) {
         log.info("start method createUser() in userController: " + createUserDto.getEmail());
@@ -101,7 +101,7 @@ public class UserController {
                             schema = @Schema(implementation = FullUserDto.class))}),
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = @Content)})
-    @GetMapping("/get-by/{email}")
+    @GetMapping("/get-by/{email}")//√
     public ResponseEntity<Object> getByEmail(@Parameter(description = "email of user to be searched")
                                              @PathVariable("email") String email) {
         log.info("getting user by email {}", email);

@@ -2,6 +2,7 @@ package com.epam.fedunkiv.periodicals.controllers;
 
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
+import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import org.hamcrest.Matcher;
@@ -119,5 +120,21 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.fields", hasItem("password")));
         verify(userService, times(1)).getByEmail("john@gmail.com");
         verify(userService, times(0)).addUser(createUserDto);
+    }
+
+    @Test
+    void ReplenishUserBalance_positiveTest() throws Exception{
+        user.setBalance("546.33");
+        UpdateUserDto updateUserDto = new UpdateUserDto();
+        updateUserDto.setBalance("546.33");
+        when(userService.replenishBalance(updateUserDto.getBalance(), "john@gmail.com")).thenReturn(user);
+        when(userService.getByEmail("john@gmail.com")).thenReturn(Optional.of(user));
+
+        mockMvc.perform(patch("/users/replenish-balance/{email}", "john@gmail.com")
+                        .content(toJson(updateUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("john@gmail.com — balance of this user was replenished"));
+        verify(userService, times(1)).replenishBalance(updateUserDto.getBalance(), "john@gmail.com");
     }
 }
