@@ -98,10 +98,6 @@ public class PeriodicalsApplication {
             subscription.setAddress("Lviv");
             subscription.setUserId(1l);
             subscription.setPublisherId(1l);
-
-            subscriptionRepository.save(subscription);
-            List<Subscriptions> subscriptions = subscriptionRepository.findByPublisherIdAndUserId(1l, 1l);
-            log.warn("subscriptions ==> "+subscriptions);
         };
     }
 }

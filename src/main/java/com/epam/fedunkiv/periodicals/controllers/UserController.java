@@ -5,6 +5,7 @@ import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.services.UserService;
+import com.epam.fedunkiv.periodicals.services.UserServiceImpl;
 import com.epam.fedunkiv.periodicals.validation.ExistedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -27,10 +29,9 @@ import java.util.*;
 @RestController
 @RequestMapping("/users")
 @Validated
-@RequiredArgsConstructor
 public class UserController {
-//    @Resource
-    private final UserService userService;
+    @Resource
+    private UserService userService;
 
     @GetMapping("/ok")
     public ResponseEntity<Object> testControllerMethod() {
