@@ -54,7 +54,7 @@ class UserControllerTest {
                 "true","123456Q@q",  LocalDateTime.now().toString(), LocalDateTime.now().toString());
     }
     @Test
-    void GetAllUsers() throws Exception{
+    void GetAllUsers_positiveTest() throws Exception{
         lenient().when(userService.getAll()).thenReturn(List.of(user));
         mockMvc.perform(get("/users/get-all"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -102,7 +102,7 @@ class UserControllerTest {
     }
 
     @Test
-    void CreateUser_negativeTest() throws Exception{
+    void CreateUser_checkValidation_negativeTest() throws Exception{
         CreateUserDto createUserDto = new CreateUserDto("CLIENT", "john@gmail.com", null, "123456", "123456Q@q");
         when(userService.addUser(createUserDto)).thenReturn(Optional.of(user));
         when(userService.getByEmail("john@gmail.com")).thenReturn(Optional.of(user));
@@ -136,5 +136,22 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("john@gmail.com — balance of this user was replenished"));
         verify(userService, times(1)).replenishBalance(updateUserDto.getBalance(), "john@gmail.com");
+    }
+
+    @Test
+    void ReplenishUserBalance_checkValidation_negativeTest() throws Exception{
+        UpdateUserDto updateUserDto = new UpdateUserDto();
+        updateUserDto.setBalance("-546.33");
+
+        mockMvc.perform(patch("/users/replenish-balance/{email}", "john@gmail.com")
+                        .content(toJson(updateUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors", hasItem("balance must be positive")))
+                .andExpect(jsonPath("$.fields", hasSize(1)))
+                .andExpect(jsonPath("$.fields", hasItem("balance")));
+        verify(userService, times(0)).replenishBalance(updateUserDto.getBalance(), "john@gmail.com");
     }
 }
