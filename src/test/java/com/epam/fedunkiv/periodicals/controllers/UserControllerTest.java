@@ -1,15 +1,40 @@
 package com.epam.fedunkiv.periodicals.controllers;
 
+//import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
+//import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
+//import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
+//import com.epam.fedunkiv.periodicals.services.UserService;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import org.junit.Before;
+//import org.junit.Test;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.runner.RunWith;
+//import org.modelmapper.ModelMapper;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.boot.test.mock.mockito.MockBean;
+//import org.springframework.http.HttpHeaders;
+//import org.springframework.http.MediaType;
+//import org.springframework.test.context.ActiveProfiles;
+//import org.springframework.test.context.junit4.SpringRunner;
+//import org.springframework.test.web.servlet.MockMvc;
+//import org.springframework.test.web.servlet.ResultHandler;
 
+import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
+import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -19,9 +44,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+//import static groovy.json.JsonOutput.toJson;
+//import static org.hamcrest.Matchers.is;
+//import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+//import static org.mockito.ArgumentMatchers.any;
+//import static org.mockito.Mockito.*;
+//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import static groovy.json.JsonOutput.toJson;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.lenient;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -30,7 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class UserControllerTest {
-//    private static final ModelMapper mapper = new ModelMapper();
+    private ModelMapper mapper = new ModelMapper();
     @Autowired
     private MockMvc mockMvc;
 
@@ -54,10 +90,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[0].fullName", is("John Snow")))
                 .andExpect(jsonPath("$[0].email", is("john@gmail.com")))
                 .andExpect(jsonPath("$[0].role", is("CLIENT")));
+        verify(userService, times(1)).getAll();
     }
 
     @Test
-    void GetByEmail() throws Exception{
+    void GetByEmail_positiveTest() throws Exception{
         lenient().when(userService.getByEmail("john@gmail.com")).thenReturn(Optional.of(user));
         mockMvc.perform(get("/users/get-by/john@gmail.com"))
                 .andExpect(status().isOk())
@@ -65,11 +102,29 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.fullName", is("John Snow")))
                 .andExpect(jsonPath("$.email", is("john@gmail.com")))
                 .andExpect(jsonPath("$.role", is("CLIENT")));
+        verify(userService, times(1)).getByEmail("john@gmail.com");
     }
 
     @Test
-    void testOk()throws Exception{
-        mockMvc.perform(get("/users/ok")).andDo(print())
-                .andExpect(status().isOk());
+    void GetByEmail_negativeTest() throws Exception{
+        lenient().when(userService.getByEmail("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+        mockMvc.perform(get("/users/get-by/johnq@gmail.com"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("johnq@gmail.com — the user with such email was not found"));
     }
+
+    @Test
+    void CreateUser_positiveTest() throws Exception{
+        CreateUserDto createUserDto = new CreateUserDto("CLIENT", "john@gmail.com", "John", "123456Q@q", "123456Q@q");
+        when(userService.addUser(createUserDto)).thenReturn(Optional.of(user));
+        when(userService.getByEmail("john@gmail.com")).thenThrow(NoSuchUserException.class);
+
+        mockMvc.perform(post("/users/create")
+                        .content(toJson(createUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(createUserDto.getEmail() + ": user was created"));
+
+    }
+
 }

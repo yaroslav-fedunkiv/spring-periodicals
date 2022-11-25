@@ -33,10 +33,6 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @GetMapping("/ok")
-    public ResponseEntity<Object> testControllerMethod() {
-        return new ResponseEntity<>("ok", HttpStatus.OK);
-    }
     @Operation(summary = "Get all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found all users",
