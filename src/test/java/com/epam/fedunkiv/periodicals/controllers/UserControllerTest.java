@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static groovy.json.JsonOutput.toJson;
@@ -153,5 +154,20 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.fields", hasSize(1)))
                 .andExpect(jsonPath("$.fields", hasItem("balance")));
         verify(userService, times(0)).replenishBalance(updateUserDto.getBalance(), "john@gmail.com");
+    }
+
+    @Test
+    void ReplenishUserBalance_negativeTest() throws Exception{
+        UpdateUserDto updateUserDto = new UpdateUserDto();
+        updateUserDto.setBalance("546.33");
+        when(userService.replenishBalance(updateUserDto.getBalance(), "johnq@gmail.com")).thenThrow(NoSuchElementException.class);
+
+        mockMvc.perform(patch("/users/replenish-balance/{email}", "johnq@gmail.com")
+                        .content(toJson(updateUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is("404 NOT_FOUND")))
+                .andExpect(jsonPath("$.message", is("johnq@gmail.com — such email was not found")));
+        verify(userService, times(1)).replenishBalance(updateUserDto.getBalance(), "johnq@gmail.com");
     }
 }
