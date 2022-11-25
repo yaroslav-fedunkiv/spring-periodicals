@@ -1,31 +1,10 @@
 package com.epam.fedunkiv.periodicals.controllers;
 
-//import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
-//import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
-//import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
-//import com.epam.fedunkiv.periodicals.services.UserService;
-//import com.fasterxml.jackson.core.JsonProcessingException;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import org.junit.Before;
-//import org.junit.Test;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.runner.RunWith;
-//import org.modelmapper.ModelMapper;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.http.HttpHeaders;
-//import org.springframework.http.MediaType;
-//import org.springframework.test.context.ActiveProfiles;
-//import org.springframework.test.context.junit4.SpringRunner;
-//import org.springframework.test.web.servlet.MockMvc;
-//import org.springframework.test.web.servlet.ResultHandler;
-
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.services.UserService;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -44,15 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-//import static groovy.json.JsonOutput.toJson;
-//import static org.hamcrest.Matchers.is;
-//import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.*;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import static groovy.json.JsonOutput.toJson;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,6 +83,7 @@ class UserControllerTest {
         mockMvc.perform(get("/users/get-by/johnq@gmail.com"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("johnq@gmail.com — the user with such email was not found"));
+        verify(userService, times(1)).getByEmail("johnq@gmail.com");
     }
 
     @Test
@@ -124,7 +97,27 @@ class UserControllerTest {
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(createUserDto.getEmail() + ": user was created"));
-
+        verify(userService, times(1)).getByEmail("john@gmail.com");
     }
 
+    @Test
+    void CreateUser_negativeTest() throws Exception{
+        CreateUserDto createUserDto = new CreateUserDto("CLIENT", "john@gmail.com", null, "123456", "123456Q@q");
+        when(userService.addUser(createUserDto)).thenReturn(Optional.of(user));
+        when(userService.getByEmail("john@gmail.com")).thenReturn(Optional.of(user));
+        mockMvc.perform(post("/users/create")
+                        .content(toJson(createUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors", hasItem("Such email address is already exist")))
+                .andExpect(jsonPath("$.errors", hasItem("Field full name can't be empty")))
+                .andExpect(jsonPath("$.fields", hasSize(3)))
+                .andExpect(jsonPath("$.fields", hasItem("email")))
+                .andExpect(jsonPath("$.fields", hasItem("fullName")))
+                .andExpect(jsonPath("$.fields", hasItem("password")));
+        verify(userService, times(1)).getByEmail("john@gmail.com");
+        verify(userService, times(0)).addUser(createUserDto);
+    }
 }
