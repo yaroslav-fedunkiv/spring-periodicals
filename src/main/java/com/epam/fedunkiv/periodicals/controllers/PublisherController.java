@@ -32,40 +32,38 @@ import java.util.*;
 public class PublisherController {
     @Resource
     private PublisherService publisherService;
-    @Resource
-    private UserService userService;
 
-
-    @Operation(summary = "Subscribe a user to a publisher")
+    @Operation(summary = "Get a publisher by its title")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User was subscribed",
-                    content = @Content),
-            @ApiResponse(responseCode = "412", description = "User hasn't enough money",
-                    content = @Content),
-            @ApiResponse(responseCode = "400", description = "wrong user email or publisher title",
-                    content = @Content)
-    })
-    @PostMapping("/get-by/{title}/{email}")
-    public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
-                                            @PathVariable("title") String title,
-                                            @RequestBody SubscribeDto subscribeDto) {
-        log.info("start subscribing process");
+            @ApiResponse(responseCode = "200", description = "Found the publisher",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullPublisherDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Publisher not found",
+                    content = @Content)})
+    @GetMapping("/get-by/{title}")
+    public ResponseEntity<Object> getByTitle(@Parameter(description = "title of publisher to be searched")
+                                             @PathVariable("title") String title) {
+        log.info("getting publisher by title {}", title);
         try {
-            publisherService.subscribe(email, title, subscribeDto);
-            log.info("user {} was subscribed", email);
-            return new ResponseEntity<>(email + " user was subscribed to '" + title + "' title", HttpStatus.OK);
-        }catch (NoSuchElementException e){
-            log.error("wrong email or title");
-            return new ResponseEntity<>("wrong email or title", HttpStatus.BAD_REQUEST);
-        }catch(UserIsAlreadySubscribedException e){
-            log.error("user is already subscribed");
-            return new ResponseEntity<>(email+" this user is already subscribed", HttpStatus.CONFLICT);
-        }catch (NotEnoughMoneyException e){
-            log.error("user haven't enough money");
-            return new ResponseEntity<>("user haven't enough money", HttpStatus.PRECONDITION_FAILED);
+            return new ResponseEntity<>(publisherService.getByTitle(title), HttpStatus.OK);
+        } catch (NoSuchPublisherException e) {
+            log.error("Publisher with such title not found");
+            return new ResponseEntity<>(title + " — the publisher with such a title not found",
+                    HttpStatus.NOT_FOUND);
         }
     }
 
+    @Operation(summary = "Get all publishers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all publishers",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullPublisherDto.class))})
+    })
+    @GetMapping("/get-all")
+    public ResponseEntity<Object> getAll() {
+        log.info("getting all publishers");
+        return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
+    }
     @Operation(summary = "Create a publisher")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was created",
@@ -102,23 +100,33 @@ public class PublisherController {
         }
     }
 
-    @Operation(summary = "Get a publisher by its title")
+    @Operation(summary = "Subscribe a user to a publisher")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found the publisher",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = FullPublisherDto.class))}),
-            @ApiResponse(responseCode = "404", description = "Publisher not found",
-                    content = @Content)})
-    @GetMapping("/get-by/{title}")
-    public ResponseEntity<Object> getByTitle(@Parameter(description = "title of publisher to be searched")
-                                             @PathVariable("title") String title) {
-        log.info("getting publisher by title {}", title);
+            @ApiResponse(responseCode = "200", description = "User was subscribed",
+                    content = @Content),
+            @ApiResponse(responseCode = "412", description = "User hasn't enough money",
+                    content = @Content),
+            @ApiResponse(responseCode = "400", description = "wrong user email or publisher title",
+                    content = @Content)
+    })
+    @PostMapping("/get-by/{title}/{email}")
+    public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
+                                            @PathVariable("title") String title,
+                                            @RequestBody SubscribeDto subscribeDto) {
+        log.info("start subscribing process");
         try {
-            return new ResponseEntity<>(publisherService.getByTitle(title), HttpStatus.OK);
-        } catch (NoSuchPublisherException e) {
-            log.error("Publisher with such title not found");
-            return new ResponseEntity<>(title + " — the publisher with such a title not found",
-                    HttpStatus.NOT_FOUND);
+            publisherService.subscribe(email, title, subscribeDto);
+            log.info("user {} was subscribed", email);
+            return new ResponseEntity<>(email + " user was subscribed to '" + title + "' title", HttpStatus.OK);
+        }catch (NoSuchElementException e){
+            log.error("wrong email or title");
+            return new ResponseEntity<>("wrong email or title", HttpStatus.BAD_REQUEST);
+        }catch(UserIsAlreadySubscribedException e){
+            log.error("user is already subscribed");
+            return new ResponseEntity<>(email+" this user is already subscribed", HttpStatus.CONFLICT);
+        }catch (NotEnoughMoneyException e){
+            log.error("user haven't enough money");
+            return new ResponseEntity<>("user haven't enough money", HttpStatus.PRECONDITION_FAILED);
         }
     }
 
@@ -141,18 +149,6 @@ public class PublisherController {
             log.error("{} not found", title);
             return new ResponseEntity<>(title + " not found", HttpStatus.NOT_FOUND);
         }
-    }
-
-    @Operation(summary = "Get all publishers")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found all publishers",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = FullPublisherDto.class))})
-    })
-    @GetMapping("/get-all")
-    public ResponseEntity<Object> getAll() {
-        log.info("getting all publishers");
-        return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/get/all/{page}")
