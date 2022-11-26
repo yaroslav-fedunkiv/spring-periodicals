@@ -3,16 +3,20 @@ package com.epam.fedunkiv.periodicals.controllers;
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.FullPublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
+import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
+import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
+import com.epam.fedunkiv.periodicals.exceptions.UserIsAlreadySubscribedException;
 import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static groovy.json.JsonOutput.toJson;
@@ -32,6 +37,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -200,5 +206,67 @@ class PublisherControllerTest {
                 .andExpect(jsonPath("$[0].title", is("Time")))
                 .andExpect(jsonPath("$[1].title", is("Fashion")))
                 .andExpect(jsonPath("$[2].title", is("Pump")));
+    }
+
+    @Test
+    void SubscribeUser_PositiveTest() throws Exception{
+        SubscribeDto subscribeDto = new SubscribeDto();
+        subscribeDto.setAddress("Lviv, Sadova st. 25");
+        subscribeDto.setSubscriptionPeriod("12");
+        when(publisherService.subscribe("john@gmmail.com", "Time", subscribeDto)).thenReturn(subscribeDto);
+        mockMvc.perform(post("/publishers/get-by/Time/john@gmmail.com")
+            .content(toJson(subscribeDto))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("john@gmmail.com user was subscribed to 'Time' title"));
+
+    }
+
+    @Test
+    void SubscribeUser_UserIsAlreadySubscribedException_NegativeTest() throws Exception{
+        SubscribeDto subscribeDto = new SubscribeDto();
+        subscribeDto.setAddress("Lviv, Sadova st. 25");
+        subscribeDto.setSubscriptionPeriod("12");
+        when(publisherService.subscribe(eq("john@gmmail.com"), eq("Time"),  any(SubscribeDto.class)))
+                .thenThrow(new UserIsAlreadySubscribedException());
+
+        mockMvc.perform(post("/publishers/get-by/Time/john@gmmail.com")
+            .content(toJson(subscribeDto))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("john@gmmail.com this user is already subscribed"));
+
+    }
+
+    @Test
+    void SubscribeUser_NoSuchElementException_NegativeTest() throws Exception{
+        SubscribeDto subscribeDto = new SubscribeDto();
+        subscribeDto.setAddress("Lviv, Sadova st. 25");
+        subscribeDto.setSubscriptionPeriod("12");
+        when(publisherService.subscribe(eq("john@gmmail.com"), eq("Time"),  any(SubscribeDto.class)))
+                .thenThrow(new NoSuchElementException());
+
+        mockMvc.perform(post("/publishers/get-by/Time/john@gmmail.com")
+            .content(toJson(subscribeDto))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("wrong email or title"));
+
+    }
+
+    @Test
+    void SubscribeUser_NotEnoughMoneyException_NegativeTest() throws Exception{
+        SubscribeDto subscribeDto = new SubscribeDto();
+        subscribeDto.setAddress("Lviv, Sadova st. 25");
+        subscribeDto.setSubscriptionPeriod("12");
+        when(publisherService.subscribe(eq("john@gmmail.com"), eq("Time"),  any(SubscribeDto.class)))
+                .thenThrow(new NotEnoughMoneyException());
+
+        mockMvc.perform(post("/publishers/get-by/Time/john@gmmail.com")
+            .content(toJson(subscribeDto))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isPreconditionFailed())
+                .andExpect(content().string("user haven't enough money"));
+
     }
 }

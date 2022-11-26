@@ -141,7 +141,7 @@ public class PublisherServiceImpl implements PublisherService {
 
     @Transactional
     @Override
-    public void subscribe(String email, String title, SubscribeDto subscribeDto){
+    public SubscribeDto subscribe(String email, String title, SubscribeDto subscribeDto){
         FullUserDto user = userService.getByEmail(email).orElseThrow();
         FullPublisherDto publisher = getByTitle(title).orElseThrow();
         subscribeDto.setUserId(user.getId());
@@ -150,6 +150,7 @@ public class PublisherServiceImpl implements PublisherService {
             userService.writeOffFromBalance(publisher.getPrice(), user.getEmail());
             subscriptionRepository.save(mapper.map(subscribeDto, Subscriptions.class));
             log.info("user was subscribe inside subscribe() method in publisherServiceImpl {} ", subscribeDto);
+            return subscribeDto;
         } else{
             log.error("user is already subscribed");
             throw new UserIsAlreadySubscribedException();

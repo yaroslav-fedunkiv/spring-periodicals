@@ -108,6 +108,8 @@ public class PublisherController {
             @ApiResponse(responseCode = "412", description = "User hasn't enough money",
                     content = @Content),
             @ApiResponse(responseCode = "400", description = "wrong user email or publisher title",
+                    content = @Content),
+            @ApiResponse(responseCode = "409", description = "user is already subscribed",
                     content = @Content)
     })
     @PostMapping("/get-by/{title}/{email}")
