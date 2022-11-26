@@ -112,7 +112,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "409", description = "user is already subscribed",
                     content = @Content)
     })
-    @PostMapping("/get-by/{title}/{email}")
+    @PostMapping("/get-by/{title}/{email}")//√
     public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
                                             @PathVariable("title") String title,
                                             @RequestBody SubscribeDto subscribeDto) {
@@ -154,7 +154,7 @@ public class PublisherController {
         }
     }
 
-    @GetMapping("/get/all/{page}")
+    @GetMapping("/get/all/{page}")//√
     public ResponseEntity<Object> getAllByPages(@PathVariable String page) {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAllByPages(page), HttpStatus.OK);

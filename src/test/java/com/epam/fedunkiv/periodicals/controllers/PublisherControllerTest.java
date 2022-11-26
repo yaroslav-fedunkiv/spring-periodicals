@@ -11,12 +11,14 @@ import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
 import com.epam.fedunkiv.periodicals.exceptions.UserIsAlreadySubscribedException;
+import com.epam.fedunkiv.periodicals.model.Publisher;
 import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,9 +30,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static groovy.json.JsonOutput.toJson;
 import static org.hamcrest.Matchers.hasItem;
@@ -48,6 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class PublisherControllerTest {
+    private ModelMapper mapper;
     @Autowired
     private MockMvc mockMvc;
 
@@ -268,5 +274,43 @@ class PublisherControllerTest {
                 .andExpect(status().isPreconditionFailed())
                 .andExpect(content().string("user haven't enough money"));
 
+    }
+
+    @Test
+    void SortBy_title_PositiveTest() throws Exception{
+        FullPublisherDto publisher2 = new FullPublisherDto();
+        publisher2.setTitle("Fashion");
+        FullPublisherDto publisher3 = new FullPublisherDto();
+        publisher3.setTitle("Pump");
+        when(publisherService.sortingBy("title", "0")).thenReturn(Stream.of(publisher, publisher2, publisher3)
+                .sorted(Comparator.comparing(FullPublisherDto::getTitle))
+                .collect(Collectors.toList()));
+
+        mockMvc.perform(get("/publishers/sort/by/title/0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", is("Fashion")))
+                .andExpect(jsonPath("$[1].title", is("Pump")))
+                .andExpect(jsonPath("$[2].title", is("Time")));
+    }
+
+    @Test
+    void SortBy_price_PositiveTest() throws Exception{
+        FullPublisherDto publisher2 = new FullPublisherDto("2", "Fashion", "FASHION", "22.55", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+        FullPublisherDto publisher3 = new FullPublisherDto("3", "Pump", "FASHION", "10.33", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+        List<FullPublisherDto> sortedByPrice = Stream.of(publisher, publisher2, publisher3)
+                .map(e -> mapper.map(e, Publisher.class))
+                .sorted(Comparator.comparing(Publisher::getPrice))
+                .collect(Collectors.toList())
+                .stream()
+                    .map(e -> mapper.map(e, FullPublisherDto.class))
+                    .collect(Collectors.toList());
+
+        when(publisherService.sortingBy("title", "0")).thenReturn(sortedByPrice);
+
+        mockMvc.perform(get("/publishers/sort/by/price/0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", is("Pump")))
+                .andExpect(jsonPath("$[1].title", is("Fashion")))
+                .andExpect(jsonPath("$[2].title", is("Time")));
     }
 }
