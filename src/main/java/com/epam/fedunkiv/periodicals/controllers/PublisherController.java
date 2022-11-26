@@ -71,7 +71,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "400", description = "Bad request. Publisher wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")
+    @PostMapping("/create")//√
     public ResponseEntity<Object> createPublisher(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "publisher object to be created")
                                                   @RequestBody @Valid CreatePublisherDto publisher) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -87,7 +87,7 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was updated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @PatchMapping("/update/{title}")
+    @PatchMapping("/update/{title}")//√
     public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto,
                                                   @PathVariable("title") String title) {
         try{
@@ -135,7 +135,7 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @DeleteMapping("/deactivate/{title}")
+    @DeleteMapping("/deactivate/{title}")//√
     public ResponseEntity<Object> deactivateByTitle(@PathVariable("title") String title) {
         try{
             if (!publisherService.isActive(title)){
@@ -186,7 +186,7 @@ public class PublisherController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
-    @GetMapping("/search/{title}")
+    @GetMapping("/search/{title}")//√
     public ResponseEntity<Object> search(@PathVariable String title) {
         log.info("getting searched publishers");
         return new ResponseEntity<>(publisherService.search(title), HttpStatus.OK);

@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -184,5 +185,20 @@ class PublisherControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title", is("Time")))
                 .andExpect(jsonPath("$[1].title", is("The New York Times")));
+    }
+
+    @Test
+    void GetAllPublishersByPages_positiveTest() throws Exception{
+        FullPublisherDto publisher2 = new FullPublisherDto();
+        publisher2.setTitle("Fashion");
+        FullPublisherDto publisher3 = new FullPublisherDto();
+        publisher3.setTitle("Pump");
+        when(publisherService.getAllByPages("0")).thenReturn(List.of(publisher, publisher2, publisher3));
+
+        mockMvc.perform(get("/publishers/get/all/0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", is("Time")))
+                .andExpect(jsonPath("$[1].title", is("Fashion")))
+                .andExpect(jsonPath("$[2].title", is("Pump")));
     }
 }
