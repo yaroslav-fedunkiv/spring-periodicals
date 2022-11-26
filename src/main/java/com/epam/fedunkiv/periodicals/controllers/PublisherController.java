@@ -91,6 +91,7 @@ public class PublisherController {
     public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto,
                                                   @PathVariable("title") String title) {
         try{
+            publisherService.getByTitle(title);
             publisherService.updatePublisher(updatePublisherDto, title);
             log.info("updated publisher by title {}", title);
             return new ResponseEntity<>(title + " was updated", HttpStatus.OK);

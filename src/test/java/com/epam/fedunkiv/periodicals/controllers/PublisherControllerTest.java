@@ -2,8 +2,10 @@ package com.epam.fedunkiv.periodicals.controllers;
 
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.FullPublisherDto;
+import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.users.CreateUserDto;
 import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
+import com.epam.fedunkiv.periodicals.dto.users.UpdateUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.model.Topics;
@@ -31,8 +33,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -116,4 +117,35 @@ class PublisherControllerTest {
                 .andExpect(jsonPath("$.fields", hasItem("price")))
                 .andExpect(jsonPath("$.fields", hasItem("topic")));
     }
+
+    @Test
+    void UpdatePublisher_positiveTest() throws Exception{
+        UpdatePublisherDto updatePublisherDto = new UpdatePublisherDto();
+        updatePublisherDto.setTopic("OTHER");
+        updatePublisherDto.setPrice("100.99");
+        publisher.setTopic("OTHER");
+        publisher.setPrice("100.99");
+        when(publisherService.updatePublisher(updatePublisherDto, "Time")).thenReturn(updatePublisherDto);
+
+        mockMvc.perform(patch("/publishers/update/{title}", "Time")
+                        .content(toJson(updatePublisherDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Time was updated"));
+    }
+
+    @Test
+    void UpdatePublisher_negativeTest() throws Exception{
+        UpdatePublisherDto updatePublisherDto = new UpdatePublisherDto();
+        when(publisherService.updatePublisher(updatePublisherDto, "Time")).thenThrow(NoSuchPublisherException.class);
+        when(publisherService.getByTitle("Time")).thenThrow(NoSuchPublisherException.class);
+
+        mockMvc.perform(patch("/publishers/update/{title}", "Time")
+                        .content(toJson(updatePublisherDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Time not found"));
+    }
+
+
 }

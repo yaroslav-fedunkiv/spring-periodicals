@@ -59,6 +59,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UpdateUserDto updateUser(UpdateUserDto updateUserDto, String email){
         FullUserDto fullUserDto = getByEmail(email).orElseThrow();
+
         Optional<User> user = userRepository.findById(Long.parseLong(fullUserDto.getId()));
         log .error("user ==> "+ user);
 

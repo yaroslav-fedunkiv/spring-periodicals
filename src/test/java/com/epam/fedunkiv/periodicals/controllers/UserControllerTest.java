@@ -173,10 +173,8 @@ class UserControllerTest {
     @Test
     void UpdateUser_negativeTest() throws Exception{//fixme
         UpdateUserDto updateUserDto = new UpdateUserDto();
-//        updateUserDto.setAddress("Lviv, Sadova st. 25");
-//        updateUserDto.setFullName("Joe Biden");
         when(userService.updateUser(updateUserDto, "johnq@gmail.com")).thenThrow(NoSuchUserException.class);
-//        lenient().when(userService.getByEmail("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+        when(userService.getByEmail("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
 
         mockMvc.perform(patch("/users/update/johnq@gmail.com")
                         .content(toJson(updateUserDto))
