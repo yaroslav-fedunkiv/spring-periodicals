@@ -309,4 +309,11 @@ class PublisherControllerTest {
                 .andExpect(jsonPath("$[2].title", is("Time")))
                 .andExpect(jsonPath("$[2].price", is("70.05")));
     }
+
+    @Test
+    void SortBy_NegativeTest() throws Exception{
+        mockMvc.perform(get("/publishers/sort/by/priceqq/0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Incorrect sorting type (must be price or title)"));
+    }
 }
