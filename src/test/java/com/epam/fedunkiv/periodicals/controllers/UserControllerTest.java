@@ -40,7 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class UserControllerTest {
-    private ModelMapper mapper = new ModelMapper();
     @Autowired
     private MockMvc mockMvc;
 
@@ -169,5 +168,64 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.status", is("404 NOT_FOUND")))
                 .andExpect(jsonPath("$.message", is("johnq@gmail.com — such email was not found")));
         verify(userService, times(1)).replenishBalance(updateUserDto.getBalance(), "johnq@gmail.com");
+    }
+
+    @Test
+    void UpdateUser_negativeTest() throws Exception{//fixme
+        UpdateUserDto updateUserDto = new UpdateUserDto();
+//        updateUserDto.setAddress("Lviv, Sadova st. 25");
+//        updateUserDto.setFullName("Joe Biden");
+        when(userService.updateUser(updateUserDto, "johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+//        lenient().when(userService.getByEmail("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+
+        mockMvc.perform(patch("/users/update/johnq@gmail.com")
+                        .content(toJson(updateUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("User with such email doesn't exist johnq@gmail.com"));
+    }
+
+    @Test
+    void UpdateUser_positiveTest() throws Exception{
+        UpdateUserDto updateUserDto = new UpdateUserDto();
+        updateUserDto.setAddress("Lviv, Sadova st. 25");
+        updateUserDto.setFullName("Joe Biden");
+        user.setAddress("Lviv, Sadova st. 25");
+        user.setFullName("Joe Biden");
+        when(userService.updateUser(updateUserDto, "john@gmail.com")).thenReturn(updateUserDto);
+
+        mockMvc.perform(patch("/users/update/{email}", "johnq@gmail.com")
+                        .content(toJson(updateUserDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User johnq@gmail.com was updated"));
+    }
+
+    @Test
+    void DeactivateUser_negativeTest() throws Exception{
+        when(userService.isActive(user.getEmail())).thenReturn(false);
+
+        mockMvc.perform(delete("/users/deactivate/{email}", user.getEmail()))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(user.getEmail() + " – user is already deactivated"));
+    }
+
+    @Test
+    void DeactivateUser_positiveTest() throws Exception{
+        when(userService.deactivateUser(user.getEmail())).thenReturn(user);
+        when(userService.isActive(user.getEmail())).thenReturn(true);
+
+        mockMvc.perform(delete("/users/deactivate/"+user.getEmail()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(user.getEmail() + " – user was deactivated"));
+    }
+
+    @Test
+    void DeactivateUser_checkEmail_negativeTest() throws Exception{
+        when(userService.isActive("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+
+        mockMvc.perform(delete("/users/deactivate/{email}", "johnq@gmail.com"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("johnq@gmail.com – user with such email doesn't exist"));
     }
 }

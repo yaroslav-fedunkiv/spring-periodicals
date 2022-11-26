@@ -63,7 +63,7 @@ public class UserController {
     }
 
 
-    @PatchMapping("/replenish-balance/{email}")
+    @PatchMapping("/replenish-balance/{email}")//√
     public ResponseEntity<Object> replenish(@Valid @RequestBody UpdateUserDto user,
                                             @PathVariable("email") String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -83,7 +83,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
             @ApiResponse(responseCode = "404", description = "User not found")})
-    @PatchMapping("/update/{email}")
+    @PatchMapping("/update/{email}")//√-
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user, @PathVariable("email") String email) {
         try{
             userService.updateUser(user, email);
@@ -119,7 +119,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User is already deactivated")
     })
-    @DeleteMapping("/deactivate/{email}")
+    @DeleteMapping("/deactivate/{email}")//√
     public ResponseEntity<Object> deactivateUser(@PathVariable("email") String email) {
         try {
             if (!userService.isActive(email)){
