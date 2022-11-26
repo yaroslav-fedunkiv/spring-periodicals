@@ -28,6 +28,7 @@ import java.util.Optional;
 import static groovy.json.JsonOutput.toJson;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -94,5 +95,25 @@ class PublisherControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("Time– publisher was created")))
                 .andExpect(jsonPath("$.status", is("OK")));
+    }
+
+    @Test
+    void CreatePublisher_checkValidation_negativeTest() throws Exception{
+        CreatePublisherDto createPublisherDto = new CreatePublisherDto("", "NEWSq", "", "Time description");
+        when(publisherService.createPublisher(createPublisherDto)).thenReturn(Optional.of(publisher));
+
+        mockMvc.perform(post("/publishers/create")
+                        .content(toJson(createPublisherDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.errors", hasSize(3)))
+                .andExpect(jsonPath("$.errors", hasItem("length of publisher's title must be between 1 and 50 symbols")))
+                .andExpect(jsonPath("$.errors", hasItem("the price must follow the pattern: X.XX, XX.XX, XXX.XX and can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("topic of publisher can't be empty and must be chosen from list of topics (FASHION, SCIENCE, ECONOMY, NEWS, MUSIC, NATURE, OTHER)")))
+                .andExpect(jsonPath("$.fields", hasSize(3)))
+                .andExpect(jsonPath("$.fields", hasItem("title")))
+                .andExpect(jsonPath("$.fields", hasItem("price")))
+                .andExpect(jsonPath("$.fields", hasItem("topic")));
     }
 }
