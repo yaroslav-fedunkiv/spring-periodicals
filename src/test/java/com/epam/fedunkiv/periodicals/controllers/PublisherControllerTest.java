@@ -147,5 +147,30 @@ class PublisherControllerTest {
                 .andExpect(content().string("Time not found"));
     }
 
+    @Test
+    void DeactivatePublisher_negativeTest() throws Exception{
+        when(publisherService.isActive(publisher.getTitle())).thenReturn(false);
 
+        mockMvc.perform(delete("/publishers/deactivate/{title}", publisher.getTitle()))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(publisher.getTitle() + " – publisher is already deactivated"));
+    }
+
+    @Test
+    void DeactivatePublisher_positiveTest() throws Exception{
+        when(publisherService.isActive(publisher.getTitle())).thenReturn(true);
+
+        mockMvc.perform(delete("/publishers/deactivate/{title}", publisher.getTitle()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(publisher.getTitle() + " was deactivated"));
+    }
+
+    @Test
+    void DeactivatePublisher_checkEmail_negativeTest() throws Exception{
+        when(publisherService.isActive(publisher.getTitle())).thenThrow(NoSuchPublisherException.class);
+
+        mockMvc.perform(delete("/publishers/deactivate/{title}", publisher.getTitle()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(publisher.getTitle() + " not found"));
+    }
 }
