@@ -40,7 +40,7 @@ public class PublisherController {
                             schema = @Schema(implementation = FullPublisherDto.class))}),
             @ApiResponse(responseCode = "404", description = "Publisher not found",
                     content = @Content)})
-    @GetMapping("/get-by/{title}")
+    @GetMapping("/get-by/{title}")//√
     public ResponseEntity<Object> getByTitle(@Parameter(description = "title of publisher to be searched")
                                              @PathVariable("title") String title) {
         log.info("getting publisher by title {}", title);
@@ -59,7 +59,7 @@ public class PublisherController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
-    @GetMapping("/get-all")
+    @GetMapping("/get-all")//√
     public ResponseEntity<Object> getAll() {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);

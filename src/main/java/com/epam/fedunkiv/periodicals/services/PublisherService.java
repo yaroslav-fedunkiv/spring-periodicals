@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PublisherService {
-    void createPublisher(CreatePublisherDto createPublisherDto);
+    Optional<FullPublisherDto> createPublisher(CreatePublisherDto createPublisherDto);
     List<FullPublisherDto> getAll();
     List<FullPublisherDto> search(String title);
     void subscribe(String email, String title, SubscribeDto subscribeDto);

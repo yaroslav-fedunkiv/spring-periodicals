@@ -35,9 +35,10 @@ public class PublisherServiceImpl implements PublisherService {
     private final ModelMapper mapper;
 
     @Override
-    public void createPublisher(CreatePublisherDto createPublisherDto) {
-        publisherRepository.save(mapper.map(createPublisherDto, Publisher.class));
+    public Optional<FullPublisherDto> createPublisher(CreatePublisherDto createPublisherDto) {
+        Publisher publisher = publisherRepository.save(mapper.map(createPublisherDto, Publisher.class));
         log.info("publisher is saved {}", createPublisherDto);
+        return Optional.of(mapper.map(publisher, FullPublisherDto.class));
     }
 
     @Override
