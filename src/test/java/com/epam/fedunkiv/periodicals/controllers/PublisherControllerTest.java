@@ -316,4 +316,29 @@ class PublisherControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Incorrect sorting type (must be price or title)"));
     }
+
+    @Test
+    void GetByTopic_positiveTest() throws Exception{
+        FullPublisherDto publisher2 = new FullPublisherDto("2", "Fashion", "FASHION", "22.55", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+        FullPublisherDto publisher3 = new FullPublisherDto("3", "Pump", "FASHION", "10.33", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+
+        when(publisherService.getByTopic("FASHION", "0")).thenReturn(List.of(publisher2, publisher3));
+        mockMvc.perform(get("/publishers/get/by/FASHION/0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", is("Fashion")))
+                .andExpect(jsonPath("$[1].title", is("Pump")))
+                .andExpect(jsonPath("$[0].topic", is("FASHION")))
+                .andExpect(jsonPath("$[1].topic", is("FASHION")));
+    }
+
+    @Test
+    void GetByTopic_negativeTest() throws Exception{
+//        FullPublisherDto publisher2 = new FullPublisherDto("2", "Fashion", "FASHION", "22.55", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+//        FullPublisherDto publisher3 = new FullPublisherDto("3", "Pump", "FASHION", "10.33", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+
+//        when(publisherService.getByTopic("FASHION", "0")).thenReturn(List.of(publisher2, publisher3));
+        mockMvc.perform(get("/publishers/get/by/FASHIONqq/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("FASHIONqq — Topic doesn't exist"));
+    }
 }

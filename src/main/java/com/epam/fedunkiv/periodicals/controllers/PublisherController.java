@@ -160,7 +160,7 @@ public class PublisherController {
         return new ResponseEntity<>(publisherService.getAllByPages(page), HttpStatus.OK);
     }
 
-    @GetMapping("/sort/by/{sort}/{page}")
+    @GetMapping("/sort/by/{sort}/{page}")//√
     public ResponseEntity<Object> sortBy(@PathVariable String sort, @PathVariable String page) {
         if (sort.equals("price") || sort.equals("title")){
             log.info("sorting all publishers");
