@@ -53,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class PublisherControllerTest {
-    private ModelMapper mapper;
+//    private ModelMapper mapper;
     @Autowired
     private MockMvc mockMvc;
 
@@ -297,20 +297,16 @@ class PublisherControllerTest {
     void SortBy_price_PositiveTest() throws Exception{
         FullPublisherDto publisher2 = new FullPublisherDto("2", "Fashion", "FASHION", "22.55", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
         FullPublisherDto publisher3 = new FullPublisherDto("3", "Pump", "FASHION", "10.33", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
-        List<FullPublisherDto> sortedByPrice = Stream.of(publisher, publisher2, publisher3)
-                .map(e -> mapper.map(e, Publisher.class))
-                .sorted(Comparator.comparing(Publisher::getPrice))
-                .collect(Collectors.toList())
-                .stream()
-                    .map(e -> mapper.map(e, FullPublisherDto.class))
-                    .collect(Collectors.toList());
 
-        when(publisherService.sortingBy("title", "0")).thenReturn(sortedByPrice);
+        when(publisherService.sortingBy("price", "0")).thenReturn(List.of(publisher3, publisher2, publisher));
 
         mockMvc.perform(get("/publishers/sort/by/price/0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title", is("Pump")))
+                .andExpect(jsonPath("$[0].price", is("10.33")))
                 .andExpect(jsonPath("$[1].title", is("Fashion")))
-                .andExpect(jsonPath("$[2].title", is("Time")));
+                .andExpect(jsonPath("$[1].price", is("22.55")))
+                .andExpect(jsonPath("$[2].title", is("Time")))
+                .andExpect(jsonPath("$[2].price", is("70.05")));
     }
 }
