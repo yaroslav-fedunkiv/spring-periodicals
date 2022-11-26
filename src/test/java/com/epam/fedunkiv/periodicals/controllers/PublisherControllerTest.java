@@ -173,4 +173,16 @@ class PublisherControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(publisher.getTitle() + " not found"));
     }
+
+    @Test
+    void searchPublisher_positiveTest() throws Exception{
+        FullPublisherDto theNewYorkTimes = new FullPublisherDto("2", "The New York Times", "NEWS", "85.05", "The New York Times description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
+
+        when(publisherService.search("the")).thenReturn(List.of(publisher, theNewYorkTimes));
+
+        mockMvc.perform(get("/publishers/search/the"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", is("Time")))
+                .andExpect(jsonPath("$[1].title", is("The New York Times")));
+    }
 }
