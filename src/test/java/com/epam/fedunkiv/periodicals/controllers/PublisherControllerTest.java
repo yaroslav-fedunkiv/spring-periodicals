@@ -53,7 +53,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class PublisherControllerTest {
-//    private ModelMapper mapper;
     @Autowired
     private MockMvc mockMvc;
 
@@ -150,8 +149,7 @@ class PublisherControllerTest {
     @Test
     void UpdatePublisher_negativeTest() throws Exception{
         UpdatePublisherDto updatePublisherDto = new UpdatePublisherDto();
-        when(publisherService.updatePublisher(updatePublisherDto, "Time")).thenThrow(NoSuchPublisherException.class);
-        when(publisherService.getByTitle("Time")).thenThrow(NoSuchPublisherException.class);
+        when(publisherService.updatePublisher(any(UpdatePublisherDto.class), eq("Time"))).thenThrow(NoSuchPublisherException.class);
 
         mockMvc.perform(patch("/publishers/update/{title}", "Time")
                         .content(toJson(updatePublisherDto))
@@ -333,10 +331,6 @@ class PublisherControllerTest {
 
     @Test
     void GetByTopic_negativeTest() throws Exception{
-//        FullPublisherDto publisher2 = new FullPublisherDto("2", "Fashion", "FASHION", "22.55", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
-//        FullPublisherDto publisher3 = new FullPublisherDto("3", "Pump", "FASHION", "10.33", "Time description", "true", LocalDateTime.now().toString(), LocalDateTime.now().toString());
-
-//        when(publisherService.getByTopic("FASHION", "0")).thenReturn(List.of(publisher2, publisher3));
         mockMvc.perform(get("/publishers/get/by/FASHIONqq/0"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("FASHIONqq — Topic doesn't exist"));

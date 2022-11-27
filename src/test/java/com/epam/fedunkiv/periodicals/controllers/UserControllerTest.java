@@ -171,10 +171,9 @@ class UserControllerTest {
     }
 
     @Test
-    void UpdateUser_negativeTest() throws Exception{//fixme
+    void UpdateUser_negativeTest() throws Exception{
         UpdateUserDto updateUserDto = new UpdateUserDto();
-        when(userService.updateUser(updateUserDto, "johnq@gmail.com")).thenThrow(NoSuchUserException.class);
-        when(userService.getByEmail("johnq@gmail.com")).thenThrow(NoSuchUserException.class);
+        when(userService.updateUser(any(UpdateUserDto.class), eq("johnq@gmail.com"))).thenThrow(NoSuchUserException.class);
 
         mockMvc.perform(patch("/users/update/johnq@gmail.com")
                         .content(toJson(updateUserDto))

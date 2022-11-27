@@ -40,7 +40,7 @@ public class PublisherController {
                             schema = @Schema(implementation = FullPublisherDto.class))}),
             @ApiResponse(responseCode = "404", description = "Publisher not found",
                     content = @Content)})
-    @GetMapping("/get-by/{title}")//√
+    @GetMapping("/get-by/{title}")
     public ResponseEntity<Object> getByTitle(@Parameter(description = "title of publisher to be searched")
                                              @PathVariable("title") String title) {
         log.info("getting publisher by title {}", title);
@@ -59,7 +59,7 @@ public class PublisherController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
-    @GetMapping("/get-all")//√
+    @GetMapping("/get-all")
     public ResponseEntity<Object> getAll() {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
@@ -71,7 +71,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "400", description = "Bad request. Publisher wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")//√
+    @PostMapping("/create")
     public ResponseEntity<Object> createPublisher(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "publisher object to be created")
                                                   @RequestBody @Valid CreatePublisherDto publisher) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -87,11 +87,10 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was updated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @PatchMapping("/update/{title}")//√
+    @PatchMapping("/update/{title}")
     public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto,
                                                   @PathVariable("title") String title) {
         try{
-            publisherService.getByTitle(title);
             publisherService.updatePublisher(updatePublisherDto, title);
             log.info("updated publisher by title {}", title);
             return new ResponseEntity<>(title + " was updated", HttpStatus.OK);
@@ -112,7 +111,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "409", description = "user is already subscribed",
                     content = @Content)
     })
-    @PostMapping("/get-by/{title}/{email}")//√
+    @PostMapping("/get-by/{title}/{email}")
     public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
                                             @PathVariable("title") String title,
                                             @RequestBody SubscribeDto subscribeDto) {
@@ -137,7 +136,7 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @DeleteMapping("/deactivate/{title}")//√
+    @DeleteMapping("/deactivate/{title}")
     public ResponseEntity<Object> deactivateByTitle(@PathVariable("title") String title) {
         try{
             if (!publisherService.isActive(title)){
@@ -154,13 +153,13 @@ public class PublisherController {
         }
     }
 
-    @GetMapping("/get/all/{page}")//√
+    @GetMapping("/get/all/{page}")
     public ResponseEntity<Object> getAllByPages(@PathVariable String page) {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAllByPages(page), HttpStatus.OK);
     }
 
-    @GetMapping("/sort/by/{sort}/{page}")//√
+    @GetMapping("/sort/by/{sort}/{page}")
     public ResponseEntity<Object> sortBy(@PathVariable String sort, @PathVariable String page) {
         if (sort.equals("price") || sort.equals("title")){
             log.info("sorting all publishers");
@@ -188,7 +187,7 @@ public class PublisherController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
-    @GetMapping("/search/{title}")//√
+    @GetMapping("/search/{title}")
     public ResponseEntity<Object> search(@PathVariable String title) {
         log.info("getting searched publishers");
         return new ResponseEntity<>(publisherService.search(title), HttpStatus.OK);

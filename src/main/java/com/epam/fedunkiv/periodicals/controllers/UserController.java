@@ -39,7 +39,7 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullUserDto.class))})
     })
-    @GetMapping("/get-all")//√
+    @GetMapping("/get-all")
     public List<FullUserDto> getAllUsers() {
         List<FullUserDto> list = userService.getAll();
         log.info("got all users");
@@ -53,7 +53,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad request. User wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")//√
+    @PostMapping("/create")
     public ResponseEntity<Object> createUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "user object to be created")
                                              @Valid @RequestBody CreateUserDto createUserDto) {
         log.info("start method createUser() in userController: " + createUserDto.getEmail());
@@ -63,7 +63,7 @@ public class UserController {
     }
 
 
-    @PatchMapping("/replenish-balance/{email}")//√
+    @PatchMapping("/replenish-balance/{email}")
     public ResponseEntity<Object> replenish(@Valid @RequestBody UpdateUserDto user,
                                             @PathVariable("email") String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -83,10 +83,9 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
             @ApiResponse(responseCode = "404", description = "User not found")})
-    @PatchMapping("/update/{email}")//√-
+    @PatchMapping("/update/{email}")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user, @PathVariable("email") String email) {
         try{
-            userService.getByEmail(email);
             userService.updateUser(user, email);
             log.info("user was updated {}", email);
             return new ResponseEntity<>("User " + email + " was updated", HttpStatus.OK);
@@ -102,7 +101,7 @@ public class UserController {
                             schema = @Schema(implementation = FullUserDto.class))}),
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = @Content)})
-    @GetMapping("/get-by/{email}")//√
+    @GetMapping("/get-by/{email}")
     public ResponseEntity<Object> getByEmail(@Parameter(description = "email of user to be searched")
                                              @PathVariable("email") String email) {
         log.info("getting user by email {}", email);
@@ -120,7 +119,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User is already deactivated")
     })
-    @DeleteMapping("/deactivate/{email}")//√
+    @DeleteMapping("/deactivate/{email}")
     public ResponseEntity<Object> deactivateUser(@PathVariable("email") String email) {
         try {
             if (!userService.isActive(email)){
@@ -135,10 +134,5 @@ public class UserController {
             log.error("user {} doesn't exist", email);
             return new ResponseEntity<>(email + " – user with such email doesn't exist", HttpStatus.NOT_FOUND);
         }
-    }
-
-    @GetMapping("/test/get/user/{email}") //TODO (test controller method)
-    public ResponseEntity<Object> testGetByEmail(@PathVariable("email") @ExistedUser String email) {
-        return new ResponseEntity<>(userService.getByEmail(email), HttpStatus.OK);
     }
 }
