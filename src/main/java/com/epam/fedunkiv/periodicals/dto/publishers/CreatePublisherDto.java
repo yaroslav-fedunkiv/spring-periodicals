@@ -20,6 +20,8 @@ public class CreatePublisherDto {
     @Pattern(regexp = "^\\d{1,3}\\.\\d{2}", message = "{publisher.price}")
     private String price;
 
+    private String image;
+
     @Pattern(regexp = "^.{0,500}$", message = "{publisher.description}")
     private String description;
 }

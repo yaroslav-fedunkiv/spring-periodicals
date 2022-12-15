@@ -27,6 +27,8 @@ public class Publisher {
     private Double price;
     @Column(length = 500)
     private String description;
+    @Column(length = 1000)
+    private String image;
 
     @ManyToMany
     @JoinTable(

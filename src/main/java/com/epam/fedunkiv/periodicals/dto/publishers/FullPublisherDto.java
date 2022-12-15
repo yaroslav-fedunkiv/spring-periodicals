@@ -12,6 +12,7 @@ public class FullPublisherDto {
     private String title;
     private String topic;
     private String price;
+    private String image;
     private String description;
     private String isActive;
     private String created;

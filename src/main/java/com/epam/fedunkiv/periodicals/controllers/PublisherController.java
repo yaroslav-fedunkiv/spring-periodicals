@@ -29,6 +29,7 @@ import java.util.*;
 @Log4j2
 @RestController
 @RequestMapping("/publishers")
+@CrossOrigin(origins = "http://localhost:4200")
 public class PublisherController {
     @Resource
     private PublisherService publisherService;
@@ -78,7 +79,7 @@ public class PublisherController {
         publisherService.createPublisher(publisher);
         log.info("publisher is created {}", publisher);
 
-        responseBody.put("message", publisher.getTitle() + "– publisher was created");
+        responseBody.put("message", publisher.getTitle() + " – publisher was created");
         responseBody.put("status", HttpStatus.OK);
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
