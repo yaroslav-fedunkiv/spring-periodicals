@@ -64,7 +64,7 @@ public class PeriodicalsApplication {
             publisherService.createPublisher(science);
 
             CreatePublisherDto adMaterials =
-                    new CreatePublisherDto("Advanced Materials", "SCIENCE", "45.66","https://onlinelibrary.wiley.com/pb-assets/assets/15214095/cover/thumbnails/2019_31_52i0020-1577814259580.jpg",
+                    new CreatePublisherDto("Advanced Materials", "SCIENCE", "95.66","https://onlinelibrary.wiley.com/pb-assets/assets/15214095/cover/thumbnails/2019_31_52i0020-1577814259580.jpg",
                             "Advanced Materials is a weekly peer-reviewed scientific journal covering materials science. It includes communications, reviews, and feature articles on topics in chemistry, physics, nanotechnology, ceramics, metallurgy, and biomaterials.");
             publisherService.createPublisher(adMaterials);
 
