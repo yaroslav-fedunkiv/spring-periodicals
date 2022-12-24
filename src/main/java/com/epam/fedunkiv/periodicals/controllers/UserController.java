@@ -29,6 +29,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/users")
 @Validated
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     @Resource
     private UserService userService;
