@@ -15,9 +15,10 @@ public interface PublisherService {
     List<FullPublisherDto> search(String title);
     SubscribeDto subscribe(String email, String title, SubscribeDto subscribeDto);
     Optional<FullPublisherDto> getByTitle(String title);
+    Optional<FullPublisherDto> getById(Long id);
     FullPublisherDto deactivatePublisher(String title);
     UpdatePublisherDto updatePublisher(UpdatePublisherDto updatePublisher, String title);
-    boolean isActive(String title);
+    boolean isActive(Long id);
     List<FullPublisherDto> getAllByPages(String page);
     List<FullPublisherDto> sortingBy(String sortingOption, String page);
     List<FullPublisherDto> getByTopic(String topic, String page);

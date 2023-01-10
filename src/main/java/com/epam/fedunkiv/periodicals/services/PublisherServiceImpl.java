@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,18 @@ public class PublisherServiceImpl implements PublisherService {
             return Optional.of(mapper.map(publisher, FullPublisherDto.class));
         } catch (IllegalArgumentException e) {
             log.info("This title was not found {}", title);
+            throw new NoSuchPublisherException();
+        }
+    }
+
+    @Override
+    public Optional<FullPublisherDto> getById(Long id){
+        log.info("start method getById() in publisher service {}", id);
+        try {
+            Publisher publisher = publisherRepository.findById(id).orElseThrow();
+            return Optional.of(mapper.map(publisher, FullPublisherDto.class));
+        } catch (NoSuchElementException e) {
+            log.info("This title was not found {}", id);
             throw new NoSuchPublisherException();
         }
     }
@@ -134,9 +147,9 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
-    public boolean isActive(String title){
-        log.info("check if user with such email {} is active", title);
-        return Boolean.parseBoolean(getByTitle(title).orElseThrow().getIsActive());
+    public boolean isActive(Long id){
+        log.info("check if publisher with such id {} is active", id);
+        return publisherRepository.findById(id).orElseThrow().getIsActive();
     }
 
     @Transactional

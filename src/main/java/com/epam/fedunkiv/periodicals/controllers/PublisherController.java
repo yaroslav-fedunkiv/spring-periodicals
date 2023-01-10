@@ -137,20 +137,21 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @DeleteMapping("/deactivate/{title}")
-    public ResponseEntity<Object> deactivateByTitle(@PathVariable("title") String title) {
+    @DeleteMapping("/deactivate/{id}")
+    public ResponseEntity<Object> deactivateByTitle(@PathVariable("id") Long id) {
         try{
-            if (!publisherService.isActive(title)){
-                log.warn("publisher {} is already deactivated!", title);
-                return new ResponseEntity<>(title + " – publisher is already deactivated", HttpStatus.CONFLICT);
+            String title = publisherService.getById(id).orElseThrow().getTitle();
+            if (!publisherService.isActive(id)){
+                log.warn("publisher {} is already deactivated!", id);
+                return new ResponseEntity<>(id + " – publisher is already deactivated", HttpStatus.CONFLICT);
             } else{
                 publisherService.deactivatePublisher(title);
                 log.info("deactivated publisher by title {}", title);
                 return new ResponseEntity<>(title + " was deactivated", HttpStatus.OK);
             }
         } catch (NoSuchPublisherException e){
-            log.error("{} not found", title);
-            return new ResponseEntity<>(title + " not found", HttpStatus.NOT_FOUND);
+            log.error("{} not found", id);
+            return new ResponseEntity<>(id + " not found", HttpStatus.NOT_FOUND);
         }
     }
 
