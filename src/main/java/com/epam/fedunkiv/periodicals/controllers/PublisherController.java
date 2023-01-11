@@ -54,6 +54,26 @@ public class PublisherController {
         }
     }
 
+    @Operation(summary = "Get a publisher by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the publisher",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullPublisherDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Publisher not found",
+                    content = @Content)})
+    @GetMapping("/get/by/{id}")
+    public ResponseEntity<Object> getById(@Parameter(description = "title of publisher to be searched")
+                                             @PathVariable("id") String id) {
+        log.info("getting publisher by id {}", id);
+        try {
+            return new ResponseEntity<>(publisherService.getById(Long.parseLong(id)), HttpStatus.OK);
+        } catch (NoSuchPublisherException e) {
+            log.error("Publisher with such title not found");
+            return new ResponseEntity<>(id + " — the publisher with such a id not found",
+                    HttpStatus.NOT_FOUND);
+        }
+    }
+
     @Operation(summary = "Get all publishers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found all publishers",
@@ -136,6 +156,7 @@ public class PublisherController {
     @Operation(summary = "Deactivate a publisher by its title")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
+            @ApiResponse(responseCode = "409", description = "Publisher is already deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
     @DeleteMapping("/deactivate/{id}")
     public ResponseEntity<Object> deactivateByTitle(@PathVariable("id") Long id) {
