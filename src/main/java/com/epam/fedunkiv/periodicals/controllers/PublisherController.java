@@ -4,13 +4,11 @@ import com.epam.fedunkiv.periodicals.dto.publishers.FullPublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.CreatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
-import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
 import com.epam.fedunkiv.periodicals.exceptions.NotEnoughMoneyException;
 import com.epam.fedunkiv.periodicals.exceptions.UserIsAlreadySubscribedException;
 import com.epam.fedunkiv.periodicals.model.Topics;
 import com.epam.fedunkiv.periodicals.services.PublisherService;
-import com.epam.fedunkiv.periodicals.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -85,6 +83,19 @@ public class PublisherController {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
     }
+
+    @Operation(summary = "Get all publishers where isActive equals true")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all active publishers",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FullPublisherDto.class))})
+    })
+    @GetMapping("/get/all-active")
+    public ResponseEntity<Object> getAllActive() {
+        log.info("getting all publishers");
+        return new ResponseEntity<>(publisherService.getAllActive(), HttpStatus.OK);
+    }
+
     @Operation(summary = "Create a publisher")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was created",
@@ -153,13 +164,13 @@ public class PublisherController {
         }
     }
 
-    @Operation(summary = "Deactivate a publisher by its title")
+    @Operation(summary = "Deactivate a publisher by its id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "409", description = "Publisher is already deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
     @DeleteMapping("/deactivate/{id}")
-    public ResponseEntity<Object> deactivateByTitle(@PathVariable("id") Long id) {
+    public ResponseEntity<Object> deactivateById(@PathVariable("id") Long id) {
         try{
             String title = publisherService.getById(id).orElseThrow().getTitle();
             if (!publisherService.isActive(id)){
@@ -169,6 +180,29 @@ public class PublisherController {
                 publisherService.deactivatePublisher(title);
                 log.info("deactivated publisher by title {}", title);
                 return new ResponseEntity<>(title + " was deactivated", HttpStatus.OK);
+            }
+        } catch (NoSuchPublisherException e){
+            log.error("{} not found", id);
+            return new ResponseEntity<>(id + " not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Deactivate a publisher by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
+            @ApiResponse(responseCode = "409", description = "Publisher is already deactivated"),
+            @ApiResponse(responseCode = "404", description = "Publisher not found")})
+    @DeleteMapping("/activate/{id}")
+    public ResponseEntity<Object> activateById(@PathVariable("id") Long id) {
+        try{
+            String title = publisherService.getById(id).orElseThrow().getTitle();
+            if (publisherService.isActive(id)){
+                log.warn("publisher {} is already activated!", id);
+                return new ResponseEntity<>(id + " – publisher is already activated", HttpStatus.CONFLICT);
+            } else{
+                publisherService.activatePublisher(title);
+                log.info("activated publisher by title {}", title);
+                return new ResponseEntity<>(title + " was activated", HttpStatus.OK);
             }
         } catch (NoSuchPublisherException e){
             log.error("{} not found", id);

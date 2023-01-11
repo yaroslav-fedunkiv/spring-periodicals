@@ -74,6 +74,14 @@ public class PublisherServiceImpl implements PublisherService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<FullPublisherDto> getAllActive() {
+        log.info("start method getAllActive() in publisher service");
+        return publisherRepository.findAllByIsActive(true).stream()
+                .map(e -> mapper.map(e, FullPublisherDto.class))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     @Override
     public UpdatePublisherDto updatePublisher(UpdatePublisherDto updatePublisher, String title){
@@ -137,10 +145,22 @@ public class PublisherServiceImpl implements PublisherService {
     @Override
     @Transactional
     public FullPublisherDto deactivatePublisher(String title) {
-        log.info("start method deletePublisher() by title in publisher service {}", title);
+        log.info("start method deactivatePublisher() by title in publisher service {}", title);
         FullPublisherDto publisherDto = getByTitle(title).orElseThrow();
         Optional<Publisher> publisher = publisherRepository.findById(Long.parseLong(publisherDto.getId()));
         publisher.orElseThrow().setIsActive(false);
+        Publisher deactivatedPublisher = publisherRepository.save(publisher.orElseThrow());
+        log.info("publisher {} was deactivated", title);
+        return mapper.map(deactivatedPublisher, FullPublisherDto.class);
+    }
+
+    @Override
+    @Transactional
+    public FullPublisherDto activatePublisher(String title) {
+        log.info("start method activatePublisher() by title in publisher service {}", title);
+        FullPublisherDto publisherDto = getByTitle(title).orElseThrow();
+        Optional<Publisher> publisher = publisherRepository.findById(Long.parseLong(publisherDto.getId()));
+        publisher.orElseThrow().setIsActive(true);
         Publisher deactivatedPublisher = publisherRepository.save(publisher.orElseThrow());
         log.info("publisher {} was deactivated", title);
         return mapper.map(deactivatedPublisher, FullPublisherDto.class);

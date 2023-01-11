@@ -12,11 +12,13 @@ import java.util.Optional;
 public interface PublisherService {
     Optional<FullPublisherDto> createPublisher(CreatePublisherDto createPublisherDto);
     List<FullPublisherDto> getAll();
+    List<FullPublisherDto> getAllActive();
     List<FullPublisherDto> search(String title);
     SubscribeDto subscribe(String email, String title, SubscribeDto subscribeDto);
     Optional<FullPublisherDto> getByTitle(String title);
     Optional<FullPublisherDto> getById(Long id);
     FullPublisherDto deactivatePublisher(String title);
+    FullPublisherDto activatePublisher(String title);
     UpdatePublisherDto updatePublisher(UpdatePublisherDto updatePublisher, String title);
     boolean isActive(Long id);
     List<FullPublisherDto> getAllByPages(String page);

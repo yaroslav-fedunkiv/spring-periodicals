@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface PublisherRepository extends JpaRepository<Publisher, Long> {
     Publisher findByTitle(String title);
+    List<Publisher> findAllByIsActive(Boolean isActive);
 
     @Modifying
     @Query(value = "select p from Publisher p WHERE p.title LIKE %:title% and p.isActive = true")
