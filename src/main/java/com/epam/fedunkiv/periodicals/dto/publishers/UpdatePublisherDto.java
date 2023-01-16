@@ -1,5 +1,6 @@
 package com.epam.fedunkiv.periodicals.dto.publishers;
 
+import com.epam.fedunkiv.periodicals.validation.ExistedTitle;
 import lombok.*;
 
 @AllArgsConstructor
@@ -8,8 +9,9 @@ import lombok.*;
 @Getter
 @ToString
 public class UpdatePublisherDto {
-    private String newTitle;
+    private String title;
     private String topic;
     private String price;
     private String description;
+    private String image;
 }

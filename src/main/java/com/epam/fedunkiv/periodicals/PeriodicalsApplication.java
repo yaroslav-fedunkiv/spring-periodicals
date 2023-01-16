@@ -40,7 +40,7 @@ public class PeriodicalsApplication {
             publisherService.createPublisher(theEconomist);
 
             CreatePublisherDto time =
-                    new CreatePublisherDto("Time", "NEWS", "78.99", "https://m.media-amazon.com/images/I/51vAxfluM4S._AC_SY780_.jpg",
+                    new CreatePublisherDto("Time", "NEWS", "78.99", "https://static.ukrinform.com/photos/2022_09/1664193222-632.jpeg",
                             "Time is an American news magazine and news website published and based in New York City. "
                     );
             publisherService.createPublisher(time);

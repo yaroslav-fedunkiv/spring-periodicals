@@ -88,19 +88,21 @@ public class PublisherServiceImpl implements PublisherService {
         FullPublisherDto publisherDto = getByTitle(title).orElseThrow();
         Optional<Publisher> publisher = publisherRepository.findById(Long.parseLong(publisherDto.getId()));
 
-        String newTitle = (updatePublisher.getNewTitle() == null ? title : updatePublisher.getNewTitle());
-        String topic = (updatePublisher.getTopic() == null ? publisherDto.getTopic() : updatePublisher.getTopic());
-        String price = (updatePublisher.getPrice() == null ? publisherDto.getPrice() : updatePublisher.getPrice());
-        String description = (updatePublisher.getDescription() == null ? publisherDto.getDescription() : updatePublisher.getDescription());
+        String newTitle = (updatePublisher.getTitle() == null || updatePublisher.getTitle().equals("") ? title : updatePublisher.getTitle());
+        String topic = (updatePublisher.getTopic() == null || updatePublisher.getTopic().equals("") ? publisherDto.getTopic() : updatePublisher.getTopic());
+        String price = (updatePublisher.getPrice() == null || updatePublisher.getPrice().equals("") ? publisherDto.getPrice() : updatePublisher.getPrice());
+        String description = (updatePublisher.getDescription() == null || updatePublisher.getDescription().equals("") ? publisherDto.getDescription() : updatePublisher.getDescription());
+        String image = (updatePublisher.getImage() == null || updatePublisher.getImage().equals("") ? publisherDto.getImage() : updatePublisher.getImage());
 
         publisher.orElseThrow().setTitle(newTitle);
         publisher.orElseThrow().setTopic(Topics.valueOf(topic));
         publisher.orElseThrow().setPrice(Double.parseDouble(price));
         publisher.orElseThrow().setDescription(description);
+        publisher.orElseThrow().setImage(image);
 
         Publisher updatedPublisher = publisherRepository.save(publisher.orElseThrow());
 
-        log.warn("update "+title+" with fields:\n"+newTitle+"\n"+price+"\n"+topic+"\n"+description);
+        log.warn("update "+title+" with fields:\n"+newTitle+"\n"+price+"\n"+topic+"\n"+description+"\n"+image);
         return mapper.map(updatedPublisher, UpdatePublisherDto.class);
     }
 

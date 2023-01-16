@@ -119,16 +119,17 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was updated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @PatchMapping("/update/{title}")
+    @PatchMapping("/update/{id}")
     public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto,
-                                                  @PathVariable("title") String title) {
+                                                  @PathVariable("id") Long id) {
         try{
+            String title = publisherService.getById(id).orElseThrow().getTitle();
             publisherService.updatePublisher(updatePublisherDto, title);
             log.info("updated publisher by title {}", title);
             return new ResponseEntity<>(title + " was updated", HttpStatus.OK);
         }catch (NoSuchPublisherException e){
-            log.error("{} not found", title);
-            return new ResponseEntity<>(title + " not found", HttpStatus.NOT_FOUND);
+            log.error("publisher with id: {} not found", id);
+            return new ResponseEntity<>(id + " not found", HttpStatus.NOT_FOUND);
         }
     }
 

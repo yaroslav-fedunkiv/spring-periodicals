@@ -19,7 +19,6 @@ public class CreatePublisherDto {
     @TopicValid(message = "{publisher.wrong.topic}")
     private String topic;
 
-    @Pattern(regexp = "^\\d{1,3}\\.\\d{2}", message = "{publisher.price}")
     private String price;
 
     private String image;
