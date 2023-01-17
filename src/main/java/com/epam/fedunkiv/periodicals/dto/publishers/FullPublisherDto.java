@@ -10,6 +10,7 @@ import lombok.*;
 public class FullPublisherDto {
     private String id;
     private String title;
+    private String issue;
     private String topic;
     private String price;
     private String image;

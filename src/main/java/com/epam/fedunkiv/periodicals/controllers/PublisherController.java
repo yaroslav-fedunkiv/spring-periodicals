@@ -133,6 +133,25 @@ public class PublisherController {
         }
     }
 
+    @Operation(summary = "Add new issue of publisher")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Issue was added"),
+            @ApiResponse(responseCode = "404", description = "Publisher not found")})
+    @PatchMapping("/add/new/issue/{id}")
+    public ResponseEntity<Object> addNewIssue(@RequestBody UpdatePublisherDto issue,
+                                              @PathVariable("id") Long id) {
+        try{
+            publisherService.addNewIssue(id, issue);
+            log.info("Added new issue of publisher {} ", id);
+            return new ResponseEntity<>("New issue was added", HttpStatus.OK);
+        }catch (NoSuchElementException e){
+            log.error("publisher with id: {} not found", id);
+            return new ResponseEntity<>(id + " not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
     @Operation(summary = "Subscribe a user to a publisher")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was subscribed",

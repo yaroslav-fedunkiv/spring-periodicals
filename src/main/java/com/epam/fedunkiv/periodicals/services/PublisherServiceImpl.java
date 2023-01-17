@@ -174,6 +174,16 @@ public class PublisherServiceImpl implements PublisherService {
         return publisherRepository.findById(id).orElseThrow().getIsActive();
     }
 
+    @Override
+    public void addNewIssue(Long id, UpdatePublisherDto newIssue){
+        Publisher publisher = publisherRepository.findById(id).orElseThrow();
+        publisher.setIssue(Long.parseLong(newIssue.getIssue()));
+        if (newIssue.getImage() != null && !newIssue.getImage().equals("")){
+            publisher.setImage(newIssue.getImage());
+        }
+        publisherRepository.save(publisher);
+    }
+
     @Transactional
     @Override
     public SubscribeDto subscribe(String email, String title, SubscribeDto subscribeDto){

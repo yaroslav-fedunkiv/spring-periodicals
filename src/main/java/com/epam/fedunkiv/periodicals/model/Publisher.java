@@ -20,6 +20,8 @@ public class Publisher {
     private Long id;
     @Column(nullable = false)
     private String title;
+    @Column(columnDefinition = "int default 1")
+    private Long issue;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private Topics topic;

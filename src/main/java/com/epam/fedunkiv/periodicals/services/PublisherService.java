@@ -24,4 +24,5 @@ public interface PublisherService {
     List<FullPublisherDto> getAllByPages(String page);
     List<FullPublisherDto> sortingBy(String sortingOption, String page);
     List<FullPublisherDto> getByTopic(String topic, String page);
+    void addNewIssue(Long id, UpdatePublisherDto newIssue);
 }

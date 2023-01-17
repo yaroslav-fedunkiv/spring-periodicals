@@ -10,6 +10,7 @@ import lombok.*;
 @ToString
 public class UpdatePublisherDto {
     private String title;
+    private String issue;
     private String topic;
     private String price;
     private String description;
