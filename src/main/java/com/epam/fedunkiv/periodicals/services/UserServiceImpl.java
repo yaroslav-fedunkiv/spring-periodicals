@@ -56,6 +56,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<FullUserDto> getById(String id){
+        log.info("start method getByEmail() in user service {}", id);
+        try {
+            User user = userRepository.findById(Long.parseLong(id)).orElseThrow();
+            return Optional.of(mapper.map(user, FullUserDto.class));
+        } catch (IllegalArgumentException e) {
+            log.info("This email was not found {}", id);
+            throw new NoSuchUserException();
+        }
+    }
+
+    @Override
     @Transactional
     public UpdateUserDto updateUser(UpdateUserDto updateUserDto, String email){
         FullUserDto fullUserDto = getByEmail(email).orElseThrow();
@@ -120,6 +132,18 @@ public class UserServiceImpl implements UserService {
         FullUserDto userDto = getByEmail(email).orElseThrow();
         Optional<User> user = userRepository.findById(Long.parseLong(userDto.getId()));
         user.orElseThrow().setIsActive(false);
+        User deactivatedUser = userRepository.save(user.orElseThrow());
+        log.info("user {} is deactivated", email);
+        return mapper.map(deactivatedUser, FullUserDto.class);
+    }
+
+    @Override
+    @Transactional
+    public FullUserDto activateUser(String email) {
+        log.info("start deactivating user: {}", email);
+        FullUserDto userDto = getByEmail(email).orElseThrow();
+        Optional<User> user = userRepository.findById(Long.parseLong(userDto.getId()));
+        user.orElseThrow().setIsActive(true);
         User deactivatedUser = userRepository.save(user.orElseThrow());
         log.info("user {} is deactivated", email);
         return mapper.map(deactivatedUser, FullUserDto.class);

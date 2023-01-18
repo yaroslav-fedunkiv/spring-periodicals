@@ -114,15 +114,16 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Deactivate a user by its email")
+    @Operation(summary = "Deactivate a user by its id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was deactivated"),
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User is already deactivated")
     })
-    @DeleteMapping("/deactivate/{email}")
-    public ResponseEntity<Object> deactivateUser(@PathVariable("email") String email) {
+    @DeleteMapping("/deactivate/{id}")
+    public ResponseEntity<Object> deactivateUser(@PathVariable("id") String id) {
         try {
+            String email = userService.getById(id).orElseThrow().getEmail();
             if (!userService.isActive(email)){
                 log.warn("user {} is already deactivated!", email);
                 return new ResponseEntity<>(email + " – user is already deactivated", HttpStatus.CONFLICT);
@@ -131,9 +132,33 @@ public class UserController {
                 log.info("deactivate user by email {}", email);
                 return new ResponseEntity<>(email + " – user was deactivated", HttpStatus.OK);
             }
-        } catch(NoSuchUserException e){
-            log.error("user {} doesn't exist", email);
-            return new ResponseEntity<>(email + " – user with such email doesn't exist", HttpStatus.NOT_FOUND);
+        } catch(NoSuchElementException e){
+            log.error("user {} doesn't exist", id);
+            return new ResponseEntity<>(id + " – user with such id doesn't exist", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Activate a user by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User was Activated"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "409", description = "User is already Activated")
+    })
+    @DeleteMapping("/activate/{id}")
+    public ResponseEntity<Object> activateUser(@PathVariable("id") String id) {
+        try {
+            String email = userService.getById(id).orElseThrow().getEmail();
+            if (userService.isActive(email)){
+                log.warn("user {} is already deactivated!", email);
+                return new ResponseEntity<>(email + " – user is already activated", HttpStatus.CONFLICT);
+            } else{
+                userService.activateUser(email);
+                log.info("activate user by email {}", email);
+                return new ResponseEntity<>(email + " – user was activated", HttpStatus.OK);
+            }
+        } catch(NoSuchElementException e){
+            log.error("user {} doesn't exist", id);
+            return new ResponseEntity<>(id + " – user with such id doesn't exist", HttpStatus.NOT_FOUND);
         }
     }
 }

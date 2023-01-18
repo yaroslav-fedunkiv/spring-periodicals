@@ -12,7 +12,9 @@ public interface UserService {
     Optional<FullUserDto> addUser(CreateUserDto createUserDto);
     List<FullUserDto> getAll();
     Optional<FullUserDto> getByEmail(String email);
+    Optional<FullUserDto> getById(String id);
     FullUserDto deactivateUser(String email);
+    FullUserDto activateUser(String email);
     UpdateUserDto updateUser(UpdateUserDto updatedUser, String email);
     FullUserDto replenishBalance(String newBalance, String email);
     FullUserDto writeOffFromBalance(String price, String email) throws NotEnoughMoneyException;
