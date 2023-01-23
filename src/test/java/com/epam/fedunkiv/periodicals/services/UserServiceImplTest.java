@@ -37,7 +37,7 @@ class UserServiceImplTest {
 
     @BeforeEach
     void init() {
-        user = new User(1L, "John Snow", Role.CLIENT, "john@gmail.com", "address", null, 00.00,
+        user = new User(1L, "John Snow", Role.ROLE_CLIENT, "john@gmail.com", "address", null, 00.00,
                 "123456Q@q", true, LocalDateTime.now(), LocalDateTime.now());
         userService = new UserServiceImpl(userRepository, mapper);
     }

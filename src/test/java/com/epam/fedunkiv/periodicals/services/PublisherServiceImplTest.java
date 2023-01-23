@@ -3,9 +3,7 @@ package com.epam.fedunkiv.periodicals.services;
 import com.epam.fedunkiv.periodicals.dto.publishers.FullPublisherDto;
 import com.epam.fedunkiv.periodicals.dto.publishers.UpdatePublisherDto;
 import com.epam.fedunkiv.periodicals.dto.subscriptions.SubscribeDto;
-import com.epam.fedunkiv.periodicals.dto.users.FullUserDto;
 import com.epam.fedunkiv.periodicals.exceptions.NoSuchPublisherException;
-import com.epam.fedunkiv.periodicals.exceptions.NoSuchUserException;
 import com.epam.fedunkiv.periodicals.exceptions.UserIsAlreadySubscribedException;
 import com.epam.fedunkiv.periodicals.model.*;
 import com.epam.fedunkiv.periodicals.repositories.PublisherRepository;
@@ -57,7 +55,7 @@ class PublisherServiceImplTest {
         user = new User();
         user.setId(1L);
         user.setFullName("John Snow");
-        user.setRole(Role.CLIENT);
+        user.setRole(Role.ROLE_CLIENT);
         user.setEmail("john@gmail.com");
         user.setAddress("address");
         user.setBalance(175.05);

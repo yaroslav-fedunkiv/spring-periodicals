@@ -10,11 +10,18 @@ import com.epam.fedunkiv.periodicals.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,14 +29,30 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
-
     private final ModelMapper mapper;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(userEmail);
+        if (user == null) {
+            log.error("User not found");
+            throw new UsernameNotFoundException("User not found");
+        } else {
+            log.info("User with number {} found !!!", userEmail);
+        }
+
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(user.getRole().toString()));
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+    }
 
     @Override
     public Optional<FullUserDto> addUser(CreateUserDto createUserDto) {
         log.info("start method addUser() in userService: " + createUserDto.getEmail());
+        createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
         userRepository.save(mapper.map(createUserDto, User.class));
         log.info("added new user");
         return getByEmail(createUserDto.getEmail());
