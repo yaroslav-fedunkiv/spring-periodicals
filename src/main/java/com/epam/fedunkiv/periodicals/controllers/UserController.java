@@ -40,7 +40,7 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullUserDto.class))})
     })
-    @GetMapping("/get-all")
+    @GetMapping("/admin/get-all")
     public List<FullUserDto> getAllUsers() {
         List<FullUserDto> list = userService.getAll();
         log.info("got all users");
@@ -54,7 +54,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad request. User wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")
+    @PostMapping("/admin/create")
     public ResponseEntity<Object> createUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "user object to be created")
                                              @Valid @RequestBody CreateUserDto createUserDto) {
         log.info("start method createUser() in userController: " + createUserDto.getEmail());
@@ -64,7 +64,7 @@ public class UserController {
     }
 
 
-    @PatchMapping("/replenish-balance/{email}")
+    @PatchMapping("/admin/replenish-balance/{email}")
     public ResponseEntity<Object> replenish(@Valid @RequestBody UpdateUserDto user,
                                             @PathVariable("email") String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -84,7 +84,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
             @ApiResponse(responseCode = "404", description = "User not found")})
-    @PatchMapping("/update/{email}")
+    @PatchMapping("/admin/update/{email}")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user, @PathVariable("email") String email) {
         try{
             userService.updateUser(user, email);
@@ -120,7 +120,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User is already deactivated")
     })
-    @DeleteMapping("/deactivate/{id}")
+    @DeleteMapping("/admin/deactivate/{id}")
     public ResponseEntity<Object> deactivateUser(@PathVariable("id") String id) {
         try {
             String email = userService.getById(id).orElseThrow().getEmail();
@@ -144,7 +144,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User is already Activated")
     })
-    @DeleteMapping("/activate/{id}")
+    @DeleteMapping("/admin/activate/{id}")
     public ResponseEntity<Object> activateUser(@PathVariable("id") String id) {
         try {
             String email = userService.getById(id).orElseThrow().getEmail();

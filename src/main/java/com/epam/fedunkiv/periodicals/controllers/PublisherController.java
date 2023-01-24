@@ -78,7 +78,7 @@ public class PublisherController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = FullPublisherDto.class))})
     })
-    @GetMapping("/get-all")
+    @GetMapping("/admin/get-all")
     public ResponseEntity<Object> getAll() {
         log.info("getting all publishers");
         return new ResponseEntity<>(publisherService.getAll(), HttpStatus.OK);
@@ -103,7 +103,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "400", description = "Bad request. Publisher wasn't created",
                     content = @Content)
     })
-    @PostMapping("/create")
+    @PostMapping("/admin/create")
     public ResponseEntity<Object> createPublisher(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "publisher object to be created")
                                                   @RequestBody @Valid CreatePublisherDto publisher) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -119,7 +119,7 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Publisher was updated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @PatchMapping("/update/{id}")
+    @PatchMapping("/admin/update/{id}")
     public ResponseEntity<Object> updatePublisher(@RequestBody @Valid UpdatePublisherDto updatePublisherDto,
                                                   @PathVariable("id") Long id) {
         try{
@@ -137,7 +137,7 @@ public class PublisherController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Issue was added"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @PatchMapping("/add/new/issue/{id}")
+    @PatchMapping("/admin/add/new/issue/{id}")
     public ResponseEntity<Object> addNewIssue(@RequestBody UpdatePublisherDto issue,
                                               @PathVariable("id") Long id) {
         try{
@@ -163,7 +163,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "409", description = "user is already subscribed",
                     content = @Content)
     })
-    @PostMapping("/get-by/{title}/{email}")
+    @PostMapping("/subscribe/{title}/{email}")
     public ResponseEntity<Object> subscribe(@PathVariable("email") String email,
                                             @PathVariable("title") String title,
                                             @RequestBody SubscribeDto subscribeDto) {
@@ -189,7 +189,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "409", description = "Publisher is already deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @DeleteMapping("/deactivate/{id}")
+    @DeleteMapping("/admin/deactivate/{id}")
     public ResponseEntity<Object> deactivateById(@PathVariable("id") Long id) {
         try{
             String title = publisherService.getById(id).orElseThrow().getTitle();
@@ -212,7 +212,7 @@ public class PublisherController {
             @ApiResponse(responseCode = "200", description = "Publisher was deactivated"),
             @ApiResponse(responseCode = "409", description = "Publisher is already deactivated"),
             @ApiResponse(responseCode = "404", description = "Publisher not found")})
-    @DeleteMapping("/activate/{id}")
+    @DeleteMapping("/admin/activate/{id}")
     public ResponseEntity<Object> activateById(@PathVariable("id") Long id) {
         try{
             String title = publisherService.getById(id).orElseThrow().getTitle();

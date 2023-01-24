@@ -29,7 +29,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String phone = request.getParameter("phoneNumber");
+        String phone = request.getParameter("email");
         String password = request.getParameter("password");
 
         log.info("User with phone {} try!!", phone);

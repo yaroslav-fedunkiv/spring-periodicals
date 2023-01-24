@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableWebSecurity
@@ -31,11 +32,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager());
-        authenticationFilter.setFilterProcessesUrl("/api/login");
+        authenticationFilter.setFilterProcessesUrl("/login");
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers(GET, "/api/login/**").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/publishers/get-all/**").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(GET, "/login/**", "/publishers/get/all-active",
+                "/publishers/get/all/**", "/publishers/sort/by/**", "/publishers/get/by/**",
+                "/publishers/search/** ").permitAll();
+        http.authorizeRequests().antMatchers(POST, "/users/create").permitAll();
+        http.authorizeRequests().antMatchers(GET, "/publishers/admin/**")
+                .hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(POST,  "/publishers/subscribe/**")
+                .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(authenticationFilter);
         http.addFilterBefore(new AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

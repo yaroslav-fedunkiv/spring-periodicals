@@ -25,7 +25,7 @@ public class User {
     @Column(nullable = false)
     private String fullName;
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "varchar(10) default 'CLIENT'")
+    @Column(columnDefinition = "varchar(20) default 'ROLE_CLIENT'")
     private Role role;
     @Column(nullable = false)
     private String email;
