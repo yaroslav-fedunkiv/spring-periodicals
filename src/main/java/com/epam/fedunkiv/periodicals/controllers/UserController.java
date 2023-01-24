@@ -54,7 +54,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad request. User wasn't created",
                     content = @Content)
     })
-    @PostMapping("/admin/create")
+    @PostMapping("/create")
     public ResponseEntity<Object> createUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "user object to be created")
                                              @Valid @RequestBody CreateUserDto createUserDto) {
         log.info("start method createUser() in userController: " + createUserDto.getEmail());
@@ -64,7 +64,7 @@ public class UserController {
     }
 
 
-    @PatchMapping("/admin/replenish-balance/{email}")
+    @PatchMapping("/replenish-balance/{email}")
     public ResponseEntity<Object> replenish(@Valid @RequestBody UpdateUserDto user,
                                             @PathVariable("email") String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
@@ -84,7 +84,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
             @ApiResponse(responseCode = "404", description = "User not found")})
-    @PatchMapping("/admin/update/{email}")
+    @PatchMapping("/update/{email}")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UpdateUserDto user, @PathVariable("email") String email) {
         try{
             userService.updateUser(user, email);

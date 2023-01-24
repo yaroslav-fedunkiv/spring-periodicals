@@ -37,11 +37,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests().antMatchers(GET, "/login/**", "/publishers/get/all-active",
                 "/publishers/get/all/**", "/publishers/sort/by/**", "/publishers/get/by/**",
-                "/publishers/search/** ").permitAll();
+                "/publishers/search/** ", "/users/get-by/**").permitAll();
         http.authorizeRequests().antMatchers(POST, "/users/create").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/publishers/admin/**")
+        http.authorizeRequests().antMatchers(GET, "/publishers/admin/**", "/users/admin/**")
                 .hasAnyAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(POST,  "/publishers/subscribe/**")
+        http.authorizeRequests().antMatchers(POST,  "/publishers/subscribe/**", "/users/update/**",
+                        "/users/replenish-balance/**")
                 .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(authenticationFilter);
